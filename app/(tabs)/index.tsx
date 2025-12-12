@@ -1,8 +1,10 @@
 import { Colors } from '@/constants/colors';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Image, LayoutChangeEvent, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, LayoutChangeEvent, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 export default function HomeScreen() {
@@ -46,56 +48,56 @@ export default function HomeScreen() {
   const s = chartWidth / 400;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={styles.scrollContent}
+        style={globalStyles.scrollView} 
+        contentContainerStyle={globalStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={[styles.iconButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : Colors.gray100 }]}>
+        <View style={globalStyles.header}>
+          <View style={globalStyles.headerLeft}>
+            <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : Colors.gray100 }]}>
               <MaterialIcons name="menu" size={24} color={theme.text} />
             </TouchableOpacity>
           </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={[styles.iconButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : Colors.gray100 }]}>
+          <View style={globalStyles.headerRight}>
+            <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : Colors.gray100 }]}>
               <MaterialIcons name="notifications" size={24} color={theme.text} />
-              <View style={styles.badge} />
+              <View style={globalStyles.badge} />
             </TouchableOpacity>
             <Image 
               source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk" }} 
-              style={styles.avatar}
+              style={globalStyles.avatar}
             />
           </View>
         </View>
 
-        <View style={styles.titleContainer}>
-          <Text style={[styles.title, { color: theme.text }]}>Hola, Ana.{'\n'}</Text>
-          <Text style={[styles.title, { color: Colors.gray400 }]}>¿Cómo te sientes hoy?</Text>
+        <View style={globalStyles.titleContainer}>
+          <Text style={[globalStyles.title, { color: theme.text }]}>Hola, Ana.</Text>
+          <Text style={[globalStyles.subtitle, { color: Colors.gray400 }]}>¿Cómo te sientes hoy?</Text>
         </View>
 
         {/* Trend Chart Widget */}
-        <View style={styles.section}>
-          <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <View style={styles.cardHeader}>
+        <View style={globalStyles.section}>
+          <View style={[globalStyles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <View style={globalStyles.cardHeader}>
               <View>
-                <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>Salud Cognitiva</Text>
-                <Text style={[styles.cardTitle, { color: theme.text }]}>Mejorando</Text>
+                <Text style={[globalStyles.cardSubtitle, { color: theme.textSecondary }]}>Salud Cognitiva</Text>
+                <Text style={[globalStyles.cardTitle, { color: theme.text }]}>Mejorando</Text>
               </View>
-              <View style={styles.trendContainer}>
-                <View style={styles.trendBadge}>
+              <View style={globalStyles.trendContainer}>
+                <View style={globalStyles.trendBadge}>
                   <MaterialIcons name="trending-up" size={16} color={Colors.primary} />
-                  <Text style={styles.trendText}>+5%</Text>
+                  <Text style={globalStyles.trendText}>+5%</Text>
                 </View>
-                <Text style={styles.trendLabel}>Esta semana</Text>
+                <Text style={globalStyles.trendLabel}>Esta semana</Text>
               </View>
             </View>
 
             {/* Chart Area */}
-            <View style={styles.chartContainer} onLayout={onLayoutChart}>
+            <View style={globalStyles.chartContainer} onLayout={onLayoutChart}>
               {chartWidth > 0 && (
                 <Svg height="100%" width="100%">
                   <Defs>
@@ -123,9 +125,9 @@ export default function HomeScreen() {
               )}
             </View>
 
-            <View style={styles.daysContainer}>
+            <View style={globalStyles.daysContainer}>
               {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day, index) => (
-                <Text key={index} style={[styles.dayText, { color: index === 6 ? (isDark ? Colors.white : Colors.gray900) : Colors.gray400 }]}>
+                <Text key={index} style={[globalStyles.dayText, { color: index === 6 ? (isDark ? Colors.white : Colors.gray900) : Colors.gray400 }]}>
                   {day}
                 </Text>
               ))}
@@ -134,15 +136,15 @@ export default function HomeScreen() {
         </View>
 
         {/* Activities Section */}
-        <View style={styles.activitiesSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Para hoy</Text>
+        <View style={globalStyles.activitiesSection}>
+          <View style={globalStyles.sectionHeader}>
+            <Text style={[globalStyles.sectionTitle, { color: theme.text }]}>Para hoy</Text>
             <TouchableOpacity>
-              <Text style={styles.seeAllText}>Ver todo</Text>
+              <Text style={globalStyles.seeAllText}>Ver todo</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.cardsContainer}>
+          <View style={globalStyles.cardsContainer}>
             {/* Card 1: Focus */}
             <ActivityCard 
               theme={theme}
@@ -203,244 +205,25 @@ export default function HomeScreen() {
 
 function ActivityCard({ theme, isDark, title, subtitle, icon, subIcon, imageUri, bgColor, darkBgColor }: any) {
   return (
-    <TouchableOpacity style={[styles.activityCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-      <View style={styles.activityContent}>
-        <View style={[styles.activityImageContainer, { backgroundColor: isDark ? darkBgColor : bgColor }]}>
-          <Image source={{ uri: imageUri }} style={styles.activityImage} />
-          <View style={styles.activityIconOverlay}>
-            <MaterialIcons name={icon as any} size={24} color="white" style={styles.dropShadow} />
+    <TouchableOpacity style={[globalStyles.activityCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      <View style={globalStyles.activityContent}>
+        <View style={[globalStyles.activityImageContainer, { backgroundColor: isDark ? darkBgColor : bgColor }]}>
+          <Image source={{ uri: imageUri }} style={globalStyles.activityImage} />
+          <View style={globalStyles.activityIconOverlay}>
+            <MaterialIcons name={icon as any} size={24} color="white" style={globalStyles.dropShadow} />
           </View>
         </View>
-        <View style={styles.activityTextContainer}>
-          <Text style={[styles.activityTitle, { color: theme.text }]}>{title}</Text>
-          <View style={styles.activitySubtitleContainer}>
+        <View style={globalStyles.activityTextContainer}>
+          <Text style={[globalStyles.activityTitle, { color: theme.text }]}>{title}</Text>
+          <View style={globalStyles.activitySubtitleContainer}>
             <MaterialIcons name={subIcon as any} size={16} color={theme.textSecondary} />
-            <Text style={[styles.activitySubtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
+            <Text style={[globalStyles.activitySubtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.playButton}>
+        <TouchableOpacity style={globalStyles.playButton}>
           <MaterialIcons name="play-arrow" size={24} color={Colors.backgroundDark} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 100, // Space for bottom tab bar
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  iconButton: {
-    padding: 8,
-    borderRadius: 9999,
-  },
-  badge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: 'rgba(54, 226, 123, 0.3)',
-  },
-  titleContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    lineHeight: 36,
-  },
-  section: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  card: {
-    borderRadius: 16,
-    padding: 24,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 24,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  cardTitle: {
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  trendContainer: {
-    alignItems: 'flex-end',
-  },
-  trendBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(54, 226, 123, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  trendText: {
-    color: Colors.primary,
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  trendLabel: {
-    fontSize: 12,
-    color: Colors.gray400,
-    marginTop: 4,
-  },
-  chartContainer: {
-    height: 128,
-    width: '100%',
-  },
-  daysContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    paddingHorizontal: 4,
-  },
-  dayText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  activitiesSection: {
-    flex: 1,
-    paddingTop: 24,
-    paddingBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  seeAllText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: Colors.primary,
-  },
-  cardsContainer: {
-    gap: 16,
-    paddingHorizontal: 16,
-  },
-  activityCard: {
-    borderRadius: 16,
-    padding: 4,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  activityContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    gap: 16,
-  },
-  activityImageContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  activityImage: {
-    width: '100%',
-    height: '100%',
-    opacity: 0.8,
-  },
-  activityIconOverlay: {
-    position: 'absolute',
-    inset: 0,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dropShadow: {
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  activityTextContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: 4,
-  },
-  activityTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    lineHeight: 24,
-  },
-  activitySubtitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  activitySubtitle: {
-    fontSize: 14,
-  },
-  playButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-});
