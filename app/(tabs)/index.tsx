@@ -3,9 +3,11 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Image, LayoutChangeEvent, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const [chartWidth, setChartWidth] = useState(0);
@@ -143,7 +145,22 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.cardsContainer}>
-            {/* Card 1: Focus */}
+
+            {/* Card 1: Atención (Juego) */}
+            <ActivityCard
+              theme={theme}
+              isDark={isDark}
+              title="Atención"
+              subtitle="Concentración • 2 min"
+              icon="hearing"
+              subIcon="psychology"
+              imageUri="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80"
+              bgColor="rgba(255, 251, 235, 1)" // yellow-50
+              darkBgColor="rgba(113, 63, 18, 0.2)" // yellow-900/20
+              onPress={() => router.push('/challenges/atentionGame')}
+            />
+
+            {/* Card 2: Focus */}
             <ActivityCard 
               theme={theme}
               isDark={isDark}
@@ -201,9 +218,9 @@ export default function HomeScreen() {
   );
 }
 
-function ActivityCard({ theme, isDark, title, subtitle, icon, subIcon, imageUri, bgColor, darkBgColor }: any) {
+function ActivityCard({ theme, isDark, title, subtitle, icon, subIcon, imageUri, bgColor, darkBgColor, onPress }: any) {
   return (
-    <TouchableOpacity style={[styles.activityCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+    <TouchableOpacity style={[styles.activityCard, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={onPress}>
       <View style={styles.activityContent}>
         <View style={[styles.activityImageContainer, { backgroundColor: isDark ? darkBgColor : bgColor }]}>
           <Image source={{ uri: imageUri }} style={styles.activityImage} />
@@ -218,7 +235,7 @@ function ActivityCard({ theme, isDark, title, subtitle, icon, subIcon, imageUri,
             <Text style={[styles.activitySubtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.playButton}>
+        <TouchableOpacity style={styles.playButton} onPress={onPress}>
           <MaterialIcons name="play-arrow" size={24} color={Colors.backgroundDark} />
         </TouchableOpacity>
       </View>
