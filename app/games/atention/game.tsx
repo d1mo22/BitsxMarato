@@ -25,12 +25,13 @@ export default function AttentionGame() {
     error: '#ef4444',
   };
 
-  const [level, setLevel] = useState(3); // Sequence length
+  const [level, setLevel] = useState(4); // Sequence length (4 to 9)
+  const [trial, setTrial] = useState(1); // 1 or 2
+  const [failures, setFailures] = useState(0);
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSequence, setUserSequence] = useState<number[]>([]);
   const [phase, setPhase] = useState<'presentation' | 'input' | 'feedback'>('presentation');
   const [currentDigit, setCurrentDigit] = useState<number | null>(null);
-  const [lives, setLives] = useState(3);
   const [score, setScore] = useState(0);
   const [feedbackType, setFeedbackType] = useState<'correct' | 'incorrect' | null>(null);
 
@@ -42,7 +43,7 @@ export default function AttentionGame() {
 
   // Start game
   useEffect(() => {
-    startRound();
+    startRound(4);
   }, []);
 
   useEffect(() => {
@@ -55,8 +56,8 @@ export default function AttentionGame() {
     };
   }, []);
 
-  const startRound = () => {
-    const newSequence = Array.from({ length: level }, () => Math.floor(Math.random() * 10));
+  const startRound = (currentLevel = level) => {
+    const newSequence = Array.from({ length: currentLevel }, () => Math.floor(Math.random() * 10));
     setSequence(newSequence);
     setUserSequence([]);
     setPhase('presentation');
@@ -67,26 +68,21 @@ export default function AttentionGame() {
     for (let i = 0; i < seq.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500)); // Pause before digit
       setCurrentDigit(seq[i]);
+
+      // Start animation
       digitScale.value = withSequence(withTiming(1.2, { duration: 200 }), withTiming(1, { duration: 200 }));
       digitOpacity.value = withTiming(1, { duration: 200 });
 
+      // Speak immediately
+      try {
+        Speech.speak(String(seq[i]), {
+          language: 'es-US',
+        });
+      } catch (e) {
+        // ignore
+      }
+
       await new Promise(resolve => setTimeout(resolve, 1000)); // Show digit
-
-
-      // Speak the digit aloud (Spanish). Wait for speech to finish before continuing.
-      await new Promise<void>((resolve) => {
-        try {
-          Speech.speak(String(seq[i]), {
-            language: 'es-US',
-            onDone: () => resolve(),
-            onError: () => resolve(),
-          });
-        } catch (e) {
-          resolve();
-        }
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 300)); // brief pause after speech
 
       digitOpacity.value = withTiming(0, { duration: 200 });
       await new Promise(resolve => setTimeout(resolve, 200)); // Fade out
@@ -114,6 +110,10 @@ export default function AttentionGame() {
   const checkSequence = async (input: number[]) => {
     const isCorrect = input.every((val, index) => val === sequence[index]);
 
+    // Update failures count for this level
+    const currentFailures = isCorrect ? failures : failures + 1;
+    if (!isCorrect) setFailures(currentFailures);
+
     // Show feedback
     setPhase('feedback');
     setFeedbackType(isCorrect ? 'correct' : 'incorrect');
@@ -135,15 +135,31 @@ export default function AttentionGame() {
 
     if (isCorrect) {
       setScore(prev => prev + level * 10);
-      setLevel(prev => prev + 1);
-      startRound();
+    }
+
+    // Game Logic
+    if (trial === 1) {
+      // Move to second trial of same level
+      setTrial(2);
+      startRound(level);
     } else {
-      setLives(prev => prev - 1);
-      if (lives - 1 <= 0) {
-        router.replace({ pathname: '/games/atention/result', params: { score: score + (level - 3) * 10 } });
+      // End of second trial
+      if (currentFailures >= 2) {
+        // Failed both trials (or failed 2 times in this level)
+        router.replace({ pathname: '/games/atention/result', params: { score: score } });
       } else {
-        // Retry same level with new sequence
-        startRound();
+        // Passed at least one trial
+        if (level >= 9) {
+          // Max level reached
+          router.replace({ pathname: '/games/atention/result', params: { score: score + level * 10 } });
+        } else {
+          // Next level
+          const nextLevel = level + 1;
+          setLevel(nextLevel);
+          setTrial(1);
+          setFailures(0);
+          startRound(nextLevel);
+        }
       }
     }
   };
@@ -169,14 +185,9 @@ export default function AttentionGame() {
           <MaterialIcons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
         <View style={styles.livesContainer}>
-          {[...Array(3)].map((_, i) => (
-            <MaterialIcons
-              key={i}
-              name="favorite"
-              size={24}
-              color={i < lives ? theme.primary : theme.surface}
-            />
-          ))}
+          <Text style={{ color: theme.text, fontWeight: '600', fontSize: 16 }}>
+            Nivel {level - 3} <Text style={{ color: theme.textSecondary, fontSize: 14 }}>(Longitud {level})</Text>
+          </Text>
         </View>
       </View>
 
@@ -209,7 +220,7 @@ export default function AttentionGame() {
 
             {/* Slots */}
             <View style={styles.slotsContainer}>
-              {Array.from({ length: level }).map((_, i) => (
+              {Array.from({ length: sequence.length }).map((_, i) => (
                 <View
                   key={i}
                   style={[

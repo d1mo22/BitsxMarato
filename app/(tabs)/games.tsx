@@ -116,6 +116,36 @@ export default function GamesScreen() {
               imageDarkBgColor="#1e2433"
               onPress={() => router.push('/games/atention')}
             />
+
+            {/* Card 7: Velocidad de Procesamiento */}
+            <GameCard
+              theme={theme}
+              isDark={isDark}
+              title="Velocidad"
+              duration="~2 min"
+              description="Encuentra los números en orden ascendente."
+              category="Velocidad"
+              categoryIcon="speed"
+              imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuC6Kv7V3IVgUAgHKAZyUxClJ7XXm4eY2CH5PN3uQ8FiL_0CmvfDTPN_dYsqFzMOEzxEmSB864XPVAV68iGXn5dXsqPgHhoWbREPmYiLDejd3Le_DtTirRilLtFU1obNVlNsI0YAFJQXRbg7EixmYYJeRC8EUhPvLhqxaAVoYhsVUSeMekBveAo9gD9xPjVIruyF0hhbU2BDkeUCtZtEtO6YA6nbLlcF3g3ispqUm8inysM8ML0PypNb-WWBucD-OitR4KW9yYeNQ9o"
+              imageBgColor="#eef4ff"
+              imageDarkBgColor="#1e2433"
+              onPress={() => router.push('/games/sort')}
+            />
+
+            {/* Card 8: Memoria de Trabajo (Reves) */}
+            <GameCard
+              theme={theme}
+              isDark={isDark}
+              title="Memoria Inversa"
+              duration="~3 min"
+              description="Repite la secuencia de números al revés."
+              category="Memoria"
+              categoryIcon="psychology"
+              imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuAdwfMIPjZHGc3o76kgnV3KE8f8zTEmy2V-2_Myu_RYpFFCgHH0qquUkXyJsbab5kAzb4S7LExbYAn488ZRyiyQUMWTffWWnaHUMA3AtDZBnqnlTw-gr-u-NCxl30Zs7I-wP3-Ii_GEG1T_O-pj87EwuR0HBh8S9zlS8ftc90E9Aaq9rwFynXAy28e_R_3qNGrFCHZHtVXx3AArU-nyJ8QXkoi5YBaIuGqV9SExIvx0LBnoNJoJ-iGON6-6T0bdj7jZpkKdx2tLtT4"
+              imageBgColor="#f2f0ff"
+              imageDarkBgColor="#121022"
+              onPress={() => router.push('/games/reves')}
+            />
           </View>
         </View>
       </ScrollView>
