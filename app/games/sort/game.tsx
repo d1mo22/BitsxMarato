@@ -19,6 +19,7 @@ export default function SortGameScreen() {
     const [startTime, setStartTime] = useState<number | null>(null);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+    const [wrongNumber, setWrongNumber] = useState<number | null>(null);
 
     // Generate shuffled numbers once
     const numbers = useMemo(() => {
@@ -57,6 +58,10 @@ export default function SortGameScreen() {
             } else {
                 setCurrentNumber(prev => prev + 1);
             }
+        } else if (number > currentNumber) {
+            // Wrong number feedback
+            setWrongNumber(number);
+            setTimeout(() => setWrongNumber(null), 500);
         }
     };
 
@@ -102,6 +107,7 @@ export default function SortGameScreen() {
                 <View style={styles.grid}>
                     {numbers.map((num) => {
                         const isCompleted = num < currentNumber;
+                        const isWrong = num === wrongNumber;
                         // const isNext = num === currentNumber; // Removed hint
 
                         return (
@@ -116,10 +122,14 @@ export default function SortGameScreen() {
                                         height: BUBBLE_SIZE,
                                         backgroundColor: isCompleted
                                             ? (isDark ? 'rgba(20, 83, 45, 0.1)' : 'rgba(232, 245, 233, 0.5)')
-                                            : (isDark ? '#1a232e' : '#fff'),
+                                            : isWrong
+                                                ? (isDark ? 'rgba(239, 68, 68, 0.2)' : 'rgba(254, 226, 226, 0.5)')
+                                                : (isDark ? '#1a232e' : '#fff'),
                                         borderColor: isCompleted
                                             ? (isDark ? 'rgba(20, 83, 45, 0.3)' : '#dcfce7')
-                                            : (isDark ? '#334155' : '#f1f5f9'),
+                                            : isWrong
+                                                ? (isDark ? 'rgba(239, 68, 68, 0.4)' : '#fecaca')
+                                                : (isDark ? '#334155' : '#f1f5f9'),
                                         transform: [{ scale: isCompleted ? 0.95 : 1 }]
                                     }
                                 ]}
@@ -138,7 +148,7 @@ export default function SortGameScreen() {
                                 ) : (
                                     <Text style={[
                                         styles.bubbleText,
-                                        { color: isDark ? '#e2e8f0' : '#334155' }
+                                        { color: isWrong ? (isDark ? '#f87171' : '#ef4444') : (isDark ? '#e2e8f0' : '#334155') }
                                     ]}>
                                         {num}
                                     </Text>
