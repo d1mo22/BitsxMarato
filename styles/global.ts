@@ -6,7 +6,7 @@ export const globalStyles = StyleSheet.create({
     flex: 1,
   },
   subtitle: {
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: '400',
   },
   scrollView: {

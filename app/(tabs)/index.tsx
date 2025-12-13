@@ -17,7 +17,7 @@ export default function HomeScreen() {
   const theme = {
     background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
     text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
+    textSecondary: isDark ? Colors.gray300 : Colors.gray400,
     surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
     border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray100,
     icon: isDark ? Colors.gray400 : Colors.gray500,
@@ -52,33 +52,34 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+
+      {/* Header */}
+      <View style={[globalStyles.header, { backgroundColor: isDark ? 'rgba(17, 33, 23, 0.9)' : 'rgba(246, 248, 247, 0.9)' }]}>
+        <View style={globalStyles.headerLeft}>
+          <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
+            <MaterialIcons name="menu" size={24} color={theme.icon} />
+          </TouchableOpacity>
+        </View>
+        <View style={globalStyles.headerRight}>
+          <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
+            <MaterialIcons name="notifications" size={24} color={theme.icon} />
+            <View style={globalStyles.badge} />
+          </TouchableOpacity>
+          <Image
+            source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk" }}
+            style={globalStyles.avatar}
+          />
+        </View>
+      </View>
+
       <ScrollView
         style={globalStyles.scrollView}
         contentContainerStyle={globalStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={globalStyles.header}>
-          <View style={globalStyles.headerLeft}>
-            <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : Colors.gray100 }]}>
-              <MaterialIcons name="menu" size={24} color={theme.text} />
-            </TouchableOpacity>
-          </View>
-          <View style={globalStyles.headerRight}>
-            <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : Colors.gray100 }]}>
-              <MaterialIcons name="notifications" size={24} color={theme.text} />
-              <View style={globalStyles.badge} />
-            </TouchableOpacity>
-            <Image
-              source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk" }}
-              style={globalStyles.avatar}
-            />
-          </View>
-        </View>
-
-        <View style={globalStyles.titleContainer}>
+        <View style={[globalStyles.titleContainer, { marginTop: 16 }]}>
           <Text style={[globalStyles.title, { color: theme.text }]}>Hola, Ana.</Text>
-          <Text style={[globalStyles.subtitle, { color: Colors.gray400 }]}>¿Cómo te sientes hoy?</Text>
+          <Text style={[globalStyles.subtitle, { color: theme.textSecondary }]}>¿Cómo te sientes hoy?</Text>
         </View>
 
         {/* Trend Chart Widget */}
@@ -222,7 +223,7 @@ export default function HomeScreen() {
 
 function ActivityCard({ theme, isDark, title, subtitle, icon, subIcon, imageUri, bgColor, darkBgColor, onPress }: any) {
   return (
-    <TouchableOpacity style={[globalStyles.activityCard, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={onPress}>
+    <TouchableOpacity style={[globalStyles.activityCard, { backgroundColor: theme.surface, borderColor: theme.border }]} >
       <View style={globalStyles.activityContent}>
         <View style={[globalStyles.activityImageContainer, { backgroundColor: isDark ? darkBgColor : bgColor }]}>
           <Image source={{ uri: imageUri }} style={globalStyles.activityImage} />
@@ -237,7 +238,7 @@ function ActivityCard({ theme, isDark, title, subtitle, icon, subIcon, imageUri,
             <Text style={[globalStyles.activitySubtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
           </View>
         </View>
-        <TouchableOpacity style={globalStyles.playButton}>
+        <TouchableOpacity style={globalStyles.playButton} onPress={onPress}>
           <MaterialIcons name="play-arrow" size={24} color={Colors.backgroundDark} />
         </TouchableOpacity>
       </View>

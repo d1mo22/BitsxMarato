@@ -4,7 +4,7 @@ import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameCard from '../../components/game-card';
 
@@ -12,33 +12,41 @@ export default function GamesScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  
+
   const theme = {
     background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
     text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
+    textSecondary: isDark ? Colors.gray300 : Colors.gray400,
     surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
     border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray100,
-    icon: isDark ? Colors.white : Colors.gray800,
-    buttonHover: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    icon: isDark ? Colors.gray400 : Colors.gray500,
   };
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      
-      {/* Top App Bar */}
+
+      {/* Header */}
       <View style={[globalStyles.header, { backgroundColor: isDark ? 'rgba(17, 33, 23, 0.9)' : 'rgba(246, 248, 247, 0.9)' }]}>
-        <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
-          <MaterialIcons name="arrow-back" size={28} color={theme.icon} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
-          <MaterialIcons name="settings" size={28} color={theme.icon} />
-        </TouchableOpacity>
+        <View style={globalStyles.headerLeft}>
+          <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
+            <MaterialIcons name="menu" size={24} color={theme.icon} />
+          </TouchableOpacity>
+        </View>
+        <View style={globalStyles.headerRight}>
+          <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
+            <MaterialIcons name="notifications" size={24} color={theme.icon} />
+            <View style={globalStyles.badge} />
+          </TouchableOpacity>
+          <Image
+            source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk" }}
+            style={globalStyles.avatar}
+          />
+        </View>
       </View>
 
-      <ScrollView 
-        style={globalStyles.scrollView} 
+      <ScrollView
+        style={globalStyles.scrollView}
         contentContainerStyle={globalStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -80,7 +88,7 @@ export default function GamesScreen() {
 
           <View style={globalStyles.cardsContainer}>
             {/* Card 5: Fluencia Verbal */}
-            <GameCard 
+            <GameCard
               theme={theme}
               isDark={isDark}
               title="Fluencia Verbal"
@@ -95,7 +103,7 @@ export default function GamesScreen() {
             />
 
             {/* Card 6: Atención */}
-            <GameCard 
+            <GameCard
               theme={theme}
               isDark={isDark}
               title="Atención"

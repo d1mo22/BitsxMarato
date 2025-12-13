@@ -1,9 +1,12 @@
+
+
 import { Colors } from '@/constants/colors';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+import * as Speech from 'expo-speech';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -42,6 +45,16 @@ export default function AttentionGame() {
     startRound();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      try {
+        Speech.stop();
+      } catch (e) {
+        // ignore
+      }
+    };
+  }, []);
+
   const startRound = () => {
     const newSequence = Array.from({ length: level }, () => Math.floor(Math.random() * 10));
     setSequence(newSequence);
@@ -58,6 +71,22 @@ export default function AttentionGame() {
       digitOpacity.value = withTiming(1, { duration: 200 });
 
       await new Promise(resolve => setTimeout(resolve, 1000)); // Show digit
+
+
+      // Speak the digit aloud (Spanish). Wait for speech to finish before continuing.
+      await new Promise<void>((resolve) => {
+        try {
+          Speech.speak(String(seq[i]), {
+            language: 'es-US',
+            onDone: () => resolve(),
+            onError: () => resolve(),
+          });
+        } catch (e) {
+          resolve();
+        }
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 300)); // brief pause after speech
 
       digitOpacity.value = withTiming(0, { duration: 200 });
       await new Promise(resolve => setTimeout(resolve, 200)); // Fade out
@@ -180,7 +209,7 @@ export default function AttentionGame() {
 
             {/* Slots */}
             <View style={styles.slotsContainer}>
-              {Array.from({ length: sequence.length }).map((_, i) => (
+              {Array.from({ length: level }).map((_, i) => (
                 <View
                   key={i}
                   style={[
