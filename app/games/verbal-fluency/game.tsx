@@ -9,6 +9,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import Voice from '@react-native-voice/voice';
+import { useColorScheme } from 'react-native';
 
 type Turn = 'letter' | 'category';
 
@@ -20,115 +21,154 @@ const LETTER_POOL = 'ABCDEFGHILMNOPQRSTUVZ'.split('');
 export default function VerbalFluencyGame() {
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const [timeLeft, setTimeLeft] = useState(30);
   const [isActive, setIsActive] = useState(true);
+  const { colors: theme, isDark } = useTheme();
 
-  const theme = {
-    background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-    text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-    surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray200,
-    primary: Colors.primary,
-  };
+  const [started, setStarted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
+  const [turn, setTurn] = useState<Turn>('letter');
+  const [usedWords, setUsedWords] = useState<string[]>([]);
+  const [score, setScore] = useState(0);
+
+  // Random params per entry
+  const [letter, setLetter] = useState('P');
+  const [categoryId, setCategoryId] = useState<'animals' | 'fruits' | 'colors' | 'cities' | 'jobs' | 'objects'>(
+    'animals'
+  );
+
+  // Voice UI
+  const [listening, setListening] = useState(false);
+  const [partial, setPartial] = useState<string | null>(null);
+  const [lastWord, setLastWord] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const keepListening = useRef(false);
+  const lastPartial = useRef<string | null>(null);
+  const turnRef = useRef<Turn>('letter');
+  const usedRef = useRef<string[]>([]);
+  const startTime = useRef<number | null>(null);
+  const timerRef = useRef<NodeJS.Timer | null>(null);
+
+  useEffect(() => { turnRef.current = turn; }, [turn]);
+  useEffect(() => { usedRef.current = usedWords; }, [usedWords]);
+
+  // const theme = {
+  //   background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
+  //   text: isDark ? Colors.white : Colors.gray900,
+  //   textSecondary: isDark ? Colors.gray400 : Colors.gray500,
+  //   surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
+  //   border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray200,
+  //   primary: Colors.primary,
+  // };
 
   // Pulse animation
-  const pulse = useSharedValue(1);
+  const pulseScale = useSharedValue(1);
+
   useEffect(() => {
-    pulse.value = withRepeat(withTiming(1.15, { duration: 1000 }), -1, true);
-  }, []);
-  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
+    if (listening) {
+      pulseScale.value = withRepeat(
+        withTiming(1.2, { duration: 1000 }),
+        -1,
+        true
+      );
+    } else {
+      pulseScale.value = withTiming(1, { duration: 300 });
+    }
+  }, [listening]);
+
+  const animatedPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+  }));
 
   // Utils
   const normalize = (s: string) =>
     s.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-// ✅ Categorías (listas ampliadas)
-const CATEGORIES = useMemo(() => {
-  const mk = (label: string, words: string[]) => ({
-    label,
-    set: new Set(words.map(normalize)),
-  });
+  const CATEGORIES = useMemo(() => {
+    const mk = (label: string, words: string[]) => ({
+      label,
+      set: new Set(words.map(normalize)),
+    });
 
-  return {
-    // 🐶 ANIMALES (50+)
-    animals: mk('Animal', [
-      'perro','gato','caballo','vaca','oveja','cerdo','conejo','leon','tigre','elefante',
-      'jirafa','mono','lobo','zorro','oso','pato','gallina','pollo','aguila','halcon',
-      'paloma','cuervo','pez','tiburon','delfin','ballena','foca','morsa','pulpo','calamar',
-      'tortuga','serpiente','cobra','lagarto','iguana','camaleon','rana','sapo',
-      'cocodrilo','caiman','hipopotamo','rinoceronte','cebra','camello','burro',
-      'raton','rata','hamster','erizo','ardilla','murcielago',
-    ]),
+    return {
+      // 🐶 ANIMALES (50+)
+      animals: mk('Animal', [
+        'perro', 'gato', 'caballo', 'vaca', 'oveja', 'cerdo', 'conejo', 'leon', 'tigre', 'elefante',
+        'jirafa', 'mono', 'lobo', 'zorro', 'oso', 'pato', 'gallina', 'pollo', 'aguila', 'halcon',
+        'paloma', 'cuervo', 'pez', 'tiburon', 'delfin', 'ballena', 'foca', 'morsa', 'pulpo', 'calamar',
+        'tortuga', 'serpiente', 'cobra', 'lagarto', 'iguana', 'camaleon', 'rana', 'sapo',
+        'cocodrilo', 'caiman', 'hipopotamo', 'rinoceronte', 'cebra', 'camello', 'burro',
+        'raton', 'rata', 'hamster', 'erizo', 'ardilla', 'murcielago',
+      ]),
 
-    // 🍎 FRUTAS (50+)
-    fruits: mk('Fruta', [
-      'manzana','pera','platano','banana','naranja','mandarina','limon','pomelo','uva','kiwi',
-      'mango','papaya','pina','piña','coco','fresa','frutilla','cereza','ciruela','melocoton',
-      'durazno','albaricoque','nectarina','granada','higo','caqui','lichi','maracuya',
-      'guanabana','chirimoya','tamarindo','arandano','mora','frambuesa','grosella',
-      'sandia','melon','aguacate','palta','aceituna','datil','higo chumbo',
-      'carambola','pitaya','yuzu','kumquat','membrillo','noni','jaboticaba',
-    ]),
+      // 🍎 FRUTAS (50+)
+      fruits: mk('Fruta', [
+        'manzana', 'pera', 'platano', 'banana', 'naranja', 'mandarina', 'limon', 'pomelo', 'uva', 'kiwi',
+        'mango', 'papaya', 'pina', 'piña', 'coco', 'fresa', 'frutilla', 'cereza', 'ciruela', 'melocoton',
+        'durazno', 'albaricoque', 'nectarina', 'granada', 'higo', 'caqui', 'lichi', 'maracuya',
+        'guanabana', 'chirimoya', 'tamarindo', 'arandano', 'mora', 'frambuesa', 'grosella',
+        'sandia', 'melon', 'aguacate', 'palta', 'aceituna', 'datil', 'higo chumbo',
+        'carambola', 'pitaya', 'yuzu', 'kumquat', 'membrillo', 'noni', 'jaboticaba',
+      ]),
 
-    // 🎨 COLORES (lista corta)
-    colors: mk('Color', [
-      'rojo','azul','verde','amarillo','negro','blanco','gris','morado','violeta',
-      'rosa','naranja','marron','beige','turquesa','cian','magenta',
-    ]),
+      // 🎨 COLORES (lista corta)
+      colors: mk('Color', [
+        'rojo', 'azul', 'verde', 'amarillo', 'negro', 'blanco', 'gris', 'morado', 'violeta',
+        'rosa', 'naranja', 'marron', 'beige', 'turquesa', 'cian', 'magenta',
+      ]),
 
-    // 🌍 CIUDADES (50+)
-    cities: mk('Ciudad', [
-      'barcelona','madrid','valencia','sevilla','zaragoza','malaga','granada','cordoba',
-      'bilbao','san sebastian','vitoria','pamplona','logroño','santander','oviedo','gijon',
-      'leon','burgos','valladolid','salamanca','segovia','avila','toledo','cuenca',
-      'albacete','murcia','alicante','elche','castellon','tarragona','reus',
-      'girona','lleida','manresa','vic','figueres','ibiza','palma','mahon',
-      'paris','londres','roma','milano','venecia','florencia','berlin','munich',
-      'viena','praga','budapest','varsovia','lisboa','porto','bruselas','amsterdam',
-    ]),
+      // 🌍 CIUDADES (50+)
+      cities: mk('Ciudad', [
+        'barcelona', 'madrid', 'valencia', 'sevilla', 'zaragoza', 'malaga', 'granada', 'cordoba',
+        'bilbao', 'san sebastian', 'vitoria', 'pamplona', 'logroño', 'santander', 'oviedo', 'gijon',
+        'leon', 'burgos', 'valladolid', 'salamanca', 'segovia', 'avila', 'toledo', 'cuenca',
+        'albacete', 'murcia', 'alicante', 'elche', 'castellon', 'tarragona', 'reus',
+        'girona', 'lleida', 'manresa', 'vic', 'figueres', 'ibiza', 'palma', 'mahon',
+        'paris', 'londres', 'roma', 'milano', 'venecia', 'florencia', 'berlin', 'munich',
+        'viena', 'praga', 'budapest', 'varsovia', 'lisboa', 'porto', 'bruselas', 'amsterdam',
+      ]),
 
-    // 👩‍⚕️ PROFESIONES (50+)
-    jobs: mk('Profesión', [
-      'medico','doctora','enfermera','auxiliar','psicologo','psiquiatra','fisioterapeuta',
-      'dentista','higienista','farmaceutico','veterinario',
-      'profesor','maestro','docente','educador','pedagogo',
-      'ingeniero','arquitecto','aparejador','programador','desarrollador',
-      'analista','tecnico','electricista','fontanero','mecanico',
-      'cocinero','chef','panadero','pastelero','camarero','sumiller',
-      'abogado','juez','fiscal','notario','procurador',
-      'policia','guardia','bombero','militar','soldado',
-      'periodista','redactor','reportero','fotografo',
-      'actor','actriz','director','productor','guionista',
-      'disenador','ilustrador','animador','editor',
-      'economista','contable','auditor','administrativo',
-    ]),
+      // 👩‍⚕️ PROFESIONES (50+)
+      jobs: mk('Profesión', [
+        'medico', 'doctora', 'enfermera', 'auxiliar', 'psicologo', 'psiquiatra', 'fisioterapeuta',
+        'dentista', 'higienista', 'farmaceutico', 'veterinario',
+        'profesor', 'maestro', 'docente', 'educador', 'pedagogo',
+        'ingeniero', 'arquitecto', 'aparejador', 'programador', 'desarrollador',
+        'analista', 'tecnico', 'electricista', 'fontanero', 'mecanico',
+        'cocinero', 'chef', 'panadero', 'pastelero', 'camarero', 'sumiller',
+        'abogado', 'juez', 'fiscal', 'notario', 'procurador',
+        'policia', 'guardia', 'bombero', 'militar', 'soldado',
+        'periodista', 'redactor', 'reportero', 'fotografo',
+        'actor', 'actriz', 'director', 'productor', 'guionista',
+        'disenador', 'ilustrador', 'animador', 'editor',
+        'economista', 'contable', 'auditor', 'administrativo',
+      ]),
 
-    // 🍽️ ALIMENTOS (categoría nueva, 50+)
-    food: mk('Alimento', [
-      'pan','arroz','pasta','macarrones','espaguetis','pizza','hamburguesa','bocadillo',
-      'sopa','caldo','pure','ensalada','lentejas','garbanzos','judias','alubias',
-      'pollo','ternera','cerdo','cordero','pavo','jamon','chorizo','salchicha',
-      'pescado','atun','salmon','merluza','bacalao','sardina','boqueron',
-      'huevo','tortilla','queso','yogur','leche','mantequilla','nata',
-      'aceite','vinagre','sal','azucar','miel',
-      'patata','patatas','tomate','cebolla','ajo','zanahoria','calabacin',
-      'berenjena','pimiento','brocoli','coliflor','espinaca','lechuga',
-      'chocolate','galleta','bizcocho','pastel','tarta','helado','flan',
-    ]),
-  };
-}, []);
+      // 🍽️ ALIMENTOS (categoría nueva, 50+)
+      food: mk('Alimento', [
+        'pan', 'arroz', 'pasta', 'macarrones', 'espaguetis', 'pizza', 'hamburguesa', 'bocadillo',
+        'sopa', 'caldo', 'pure', 'ensalada', 'lentejas', 'garbanzos', 'judias', 'alubias',
+        'pollo', 'ternera', 'cerdo', 'cordero', 'pavo', 'jamon', 'chorizo', 'salchicha',
+        'pescado', 'atun', 'salmon', 'merluza', 'bacalao', 'sardina', 'boqueron',
+        'huevo', 'tortilla', 'queso', 'yogur', 'leche', 'mantequilla', 'nata',
+        'aceite', 'vinagre', 'sal', 'azucar', 'miel',
+        'patata', 'patatas', 'tomate', 'cebolla', 'ajo', 'zanahoria', 'calabacin',
+        'berenjena', 'pimiento', 'brocoli', 'coliflor', 'espinaca', 'lechuga',
+        'chocolate', 'galleta', 'bizcocho', 'pastel', 'tarta', 'helado', 'flan',
+      ]),
+    };
+  }, []);
 
 
   const categoryLabel = CATEGORIES[categoryId]?.label ?? 'Categoría';
 
-  // ✅ Randomize when entering the screen (each mount)
   useEffect(() => {
     const randomLetter = LETTER_POOL[Math.floor(Math.random() * LETTER_POOL.length)] ?? 'P';
 
     const keys = Object.keys(CATEGORIES) as Array<keyof typeof CATEGORIES>;
     const randomCategory = keys[Math.floor(Math.random() * keys.length)] ?? 'animals';
+
+
 
     setLetter(randomLetter);
     setCategoryId(randomCategory);
@@ -145,7 +185,7 @@ const CATEGORIES = useMemo(() => {
 
     // ensure mic off
     keepListening.current = false;
-    try { Voice.stop(); } catch {}
+    try { Voice.stop(); } catch { }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // <-- cada vez que entras a esta pantalla
 
@@ -232,12 +272,12 @@ const CATEGORIES = useMemo(() => {
       lastPartial.current = null;
 
       // reinicio rápido
-      try { await Voice.stop(); } catch {}
+      try { await Voice.stop(); } catch { }
       setListening(false);
 
       setTimeout(() => {
         if (keepListening.current) {
-          Voice.start('es-ES').catch(() => {});
+          Voice.start('es-ES').catch(() => { });
         }
       }, 80);
     };
@@ -255,7 +295,7 @@ const CATEGORIES = useMemo(() => {
     Voice.onSpeechError = () => {
       setListening(false);
       if (keepListening.current) {
-        setTimeout(() => Voice.start('es-ES').catch(() => {}), 200);
+        setTimeout(() => Voice.start('es-ES').catch(() => { }), 200);
       }
     };
 
@@ -285,7 +325,7 @@ const CATEGORIES = useMemo(() => {
     setListening(false);
     setPartial(null);
     stopTimer();
-    try { await Voice.stop(); } catch {}
+    try { await Voice.stop(); } catch { }
   };
 
   const toggleMic = () => {
@@ -327,7 +367,7 @@ const CATEGORIES = useMemo(() => {
 
         {/* Mic + ring */}
         <View style={styles.timerContainer}>
-          <Animated.View style={[styles.pulseBackground, pulseStyle]} />
+          <Animated.View style={[styles.pulseBackground, animatedPulseStyle, { backgroundColor: 'rgba(54, 226, 123, 0.2)' }]} />
 
           <Svg width="256" height="256" viewBox="0 0 100 100" style={{ transform: [{ rotate: '-90deg' }] }}>
             <Circle cx="50" cy="50" r="46" stroke={Colors.gray300} strokeWidth="2" fill="none" />
@@ -370,7 +410,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 256,
     height: 256,
-    marginTop: -95,
     borderRadius: 128,
     backgroundColor: 'rgba(54,226,123,0.18)',
   },
