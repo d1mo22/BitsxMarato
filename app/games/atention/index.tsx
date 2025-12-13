@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,24 +9,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AttentionIntro() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  const theme = {
-    background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-    text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-    surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    primary: Colors.primary,
-  };
+  const { colors: theme, isDark } = useTheme();
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      
+
       {/* Header */}
       <View style={globalStyles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[globalStyles.iconButton, { backgroundColor: theme.surface }]}
           onPress={() => router.back()}
         >
@@ -54,7 +45,7 @@ export default function AttentionIntro() {
         </View>
 
         <View style={styles.footer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.button, { backgroundColor: theme.primary, shadowColor: theme.primary }]}
             onPress={() => router.push('/games/atention/game')}
           >

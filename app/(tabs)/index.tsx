@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -10,18 +10,8 @@ import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg'
 
 export default function HomeScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors: theme, isDark } = useTheme();
   const [chartWidth, setChartWidth] = useState(0);
-
-  const theme = {
-    background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-    text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray300 : Colors.gray400,
-    surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray100,
-    icon: isDark ? Colors.gray400 : Colors.gray500,
-  };
 
   const onLayoutChart = (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;

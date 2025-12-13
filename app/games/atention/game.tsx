@@ -1,7 +1,7 @@
 
 
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -13,17 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AttentionGame() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  const theme = {
-    background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-    text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-    surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    primary: Colors.primary,
-    error: '#ef4444',
-  };
+  const { colors: theme, isDark } = useTheme();
 
   const [level, setLevel] = useState(4); // Sequence length (4 to 9)
   const [trial, setTrial] = useState(1); // 1 or 2

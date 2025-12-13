@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,22 +9,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function VerbalFluencyResult() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  const theme = {
-    background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-    text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-    surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    primary: Colors.primary,
-  };
+  const { colors: theme, isDark } = useTheme();
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
       <View style={globalStyles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}
           onPress={() => router.dismissTo('/games')}
         >
@@ -52,7 +43,7 @@ export default function VerbalFluencyResult() {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.continueButton}
           onPress={() => router.dismissTo('/games')}
         >

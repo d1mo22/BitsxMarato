@@ -1,27 +1,28 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, StatusBar, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
+import { globalStyles } from '@/styles/global';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function SortGameInstructionScreen() {
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { colors: theme, isDark } = useTheme();
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: isDark ? Colors.backgroundDark : Colors.backgroundLight }]}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
             <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-                    <MaterialIcons name="close" size={28} color={isDark ? '#fff' : '#1e293b'} />
+                <TouchableOpacity
+                    style={[globalStyles.iconButton, { backgroundColor: theme.surface }]}
+                    onPress={() => router.back()}
+                >
+                    <MaterialIcons name="arrow-back" size={24} color={theme.text} />
                 </TouchableOpacity>
-                <View style={styles.progressBarContainer}>
-                    <View style={styles.progressBarFill} />
-                </View>
                 <View style={{ width: 48 }} />
             </View>
 
@@ -40,7 +41,7 @@ export default function SortGameInstructionScreen() {
                 <View style={styles.textContainer}>
                     <Text style={[styles.title, { color: isDark ? '#fff' : '#1e293b' }]}>Toque Rápido</Text>
                     <Text style={[styles.description, { color: isDark ? '#d1d5db' : '#64748b' }]}>
-                        Encuentra y toca los números en orden del <Text style={{ color: Colors.primary, fontWeight: 'bold' }}>1 al 10</Text> tan rápido como puedas <Text style={{ fontStyle: 'italic' }}>cómodamente</Text>.
+                        Encuentra y toca los <Text style={{ color: Colors.primary, fontWeight: 'bold' }}>números en orden ascendente</Text> tan rápido como puedas <Text style={{ fontStyle: 'italic' }}>cómodamente</Text>.
                     </Text>
                 </View>
             </View>

@@ -15,22 +15,31 @@ export default function SortGameScreen() {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
 
-    const [currentNumber, setCurrentNumber] = useState(1);
+    const [currentIndex, setCurrentIndex] = useState(0);
     const [startTime, setStartTime] = useState<number | null>(null);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [wrongNumber, setWrongNumber] = useState<number | null>(null);
 
-    // Generate shuffled numbers once
-    const numbers = useMemo(() => {
-        const nums = Array.from({ length: TOTAL_NUMBERS }, (_, i) => i + 1);
-        // Simple shuffle
-        for (let i = nums.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [nums[i], nums[j]] = [nums[j], nums[i]];
+    // Generate random numbers and their sorted version
+    const { numbers, sortedNumbers } = useMemo(() => {
+        const set = new Set<number>();
+        while (set.size < TOTAL_NUMBERS) {
+            set.add(Math.floor(Math.random() * 99) + 1);
         }
-        return nums;
+        const nums = Array.from(set);
+        const sorted = [...nums].sort((a, b) => a - b);
+
+        // Shuffle for display
+        const shuffled = [...nums];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return { numbers: shuffled, sortedNumbers: sorted };
     }, []);
+
+    const currentNumber = sortedNumbers[currentIndex];
 
     useEffect(() => {
         setStartTime(Date.now());
@@ -49,14 +58,14 @@ export default function SortGameScreen() {
         if (isPaused) return;
 
         if (number === currentNumber) {
-            if (currentNumber === TOTAL_NUMBERS) {
+            if (currentIndex === TOTAL_NUMBERS - 1) {
                 // Game Over
                 router.push({
                     pathname: '/games/sort/result',
                     params: { time: elapsedTime }
                 });
             } else {
-                setCurrentNumber(prev => prev + 1);
+                setCurrentIndex(prev => prev + 1);
             }
         } else if (number > currentNumber) {
             // Wrong number feedback
@@ -164,14 +173,14 @@ export default function SortGameScreen() {
                 <View style={styles.progressInfo}>
                     <Text style={[styles.progressTitle, { color: isDark ? '#fff' : '#0f172a' }]}>Progreso</Text>
                     <Text style={[styles.progressSubtitle, { color: isDark ? '#94a3b8' : '#64748b' }]}>
-                        {currentNumber - 1} de {TOTAL_NUMBERS} completado
+                        {currentIndex} de {TOTAL_NUMBERS} completado
                     </Text>
                 </View>
                 <View style={[styles.progressBarBg, { backgroundColor: isDark ? '#1e293b' : '#f1f5f9' }]}>
                     <View
                         style={[
                             styles.progressBarFill,
-                            { width: `${((currentNumber - 1) / TOTAL_NUMBERS) * 100}%`, backgroundColor: Colors.primary }
+                            { width: `${(currentIndex / TOTAL_NUMBERS) * 100}%`, backgroundColor: Colors.primary }
                         ]}
                     />
                 </View>

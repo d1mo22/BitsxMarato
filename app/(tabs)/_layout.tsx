@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
@@ -7,27 +7,26 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors: theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const theme = {
-    background: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray200,
+  const customTheme = {
+    background: theme.surface,
+    border: theme.border,
     text: isDark ? Colors.gray500 : Colors.gray400,
     active: Colors.primary,
   };
 
   return (
-    <View style={[styles.tabBar, { 
-      backgroundColor: theme.background, 
-      borderTopColor: theme.border,
+    <View style={[styles.tabBar, {
+      backgroundColor: customTheme.background,
+      borderTopColor: customTheme.border,
       paddingBottom: insets.bottom > 0 ? insets.bottom : 10
     }]}>
       <View style={styles.tabBarContent}>
         {state.routes.map((route: any, index: number) => {
           const { options } = descriptors[route.key];
-          
+
           // Skip hidden routes
           if (options.href === null) return null;
 
@@ -35,8 +34,8 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
-              ? options.title
-              : route.name;
+                ? options.title
+                : route.name;
 
           const isFocused = state.index === index;
 
@@ -55,6 +54,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           let iconName: keyof typeof MaterialIcons.glyphMap = 'circle';
           if (route.name === 'index') iconName = 'home';
           else if (route.name === 'games') iconName = 'fitness-center';
+          else if (route.name === 'wellness') iconName = 'spa';
           else if (route.name === 'progress') iconName = 'bar-chart';
           else if (route.name === 'profile') iconName = 'person';
 
@@ -92,8 +92,8 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Inicio' }} />
       <Tabs.Screen name="games" options={{ title: 'Gimnasio' }} />
+      <Tabs.Screen name="wellness" options={{ title: 'Bienestar' }} />
       <Tabs.Screen name="progress" options={{ title: 'Progreso' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Perfil' }} />
     </Tabs>
   );
 }

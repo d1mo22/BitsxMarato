@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -11,19 +11,9 @@ import Svg, { Circle } from 'react-native-svg';
 
 export default function VerbalFluencyGame() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors: theme, isDark } = useTheme();
   const [timeLeft, setTimeLeft] = useState(30);
   const [isActive, setIsActive] = useState(true);
-
-  const theme = {
-    background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-    text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-    surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray200,
-    primary: Colors.primary,
-  };
 
   const pulseScale = useSharedValue(1);
 
@@ -58,7 +48,7 @@ export default function VerbalFluencyGame() {
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
       <View style={globalStyles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[globalStyles.iconButton, { backgroundColor: theme.surface }]}
           onPress={() => router.back()}
         >
@@ -85,7 +75,7 @@ export default function VerbalFluencyGame() {
         <View style={styles.centerContainer}>
           {/* Pulse Background */}
           <Animated.View style={[styles.pulseBackground, animatedPulseStyle, { backgroundColor: 'rgba(54, 226, 123, 0.2)' }]} />
-          
+
           {/* Timer Ring */}
           <View style={styles.timerContainer}>
             <Svg width="256" height="256" viewBox="0 0 100 100" style={{ transform: [{ rotate: '-90deg' }] }}>
@@ -109,7 +99,7 @@ export default function VerbalFluencyGame() {
                 strokeLinecap="round"
               />
             </Svg>
-            
+
             {/* Mic Button */}
             <TouchableOpacity style={styles.micButton}>
               <MaterialIcons name="mic" size={64} color="white" />
@@ -130,11 +120,11 @@ export default function VerbalFluencyGame() {
           {/* Visualizer Hint */}
           <View style={styles.visualizer}>
             {[12, 20, 32, 16, 8].map((h, i) => (
-              <View key={i} style={[styles.bar, { height: h, backgroundColor: Colors.primary, opacity: 0.5 + (i%2)*0.5 }]} />
+              <View key={i} style={[styles.bar, { height: h, backgroundColor: Colors.primary, opacity: 0.5 + (i % 2) * 0.5 }]} />
             ))}
           </View>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.pauseButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
             onPress={() => setIsActive(!isActive)}
           >
@@ -185,7 +175,7 @@ const styles = StyleSheet.create({
   pulseBackground: {
     position: 'absolute',
     width: 256,
-      height: 256,
+    height: 256,
     marginTop: -95,
     borderRadius: 128,
   },
