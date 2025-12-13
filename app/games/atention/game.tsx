@@ -29,10 +29,13 @@ export default function AttentionGame() {
   const [currentDigit, setCurrentDigit] = useState<number | null>(null);
   const [lives, setLives] = useState(3);
   const [score, setScore] = useState(0);
+  const [feedbackType, setFeedbackType] = useState<'correct' | 'incorrect' | null>(null);
 
   // Animation values
   const digitScale = useSharedValue(0);
   const digitOpacity = useSharedValue(0);
+  const feedbackScale = useSharedValue(0);
+  const feedbackOpacity = useSharedValue(0);
 
   // Start game
   useEffect(() => {
@@ -53,9 +56,9 @@ export default function AttentionGame() {
       setCurrentDigit(seq[i]);
       digitScale.value = withSequence(withTiming(1.2, { duration: 200 }), withTiming(1, { duration: 200 }));
       digitOpacity.value = withTiming(1, { duration: 200 });
-      
+
       await new Promise(resolve => setTimeout(resolve, 1000)); // Show digit
-      
+
       digitOpacity.value = withTiming(0, { duration: 200 });
       await new Promise(resolve => setTimeout(resolve, 200)); // Fade out
       setCurrentDigit(null);
@@ -65,7 +68,7 @@ export default function AttentionGame() {
 
   const handleInput = (num: number) => {
     if (phase !== 'input') return;
-    
+
     const newUserSequence = [...userSequence, num];
     setUserSequence(newUserSequence);
 
@@ -79,20 +82,39 @@ export default function AttentionGame() {
     setUserSequence(prev => prev.slice(0, -1));
   };
 
-  const checkSequence = (input: number[]) => {
+  const checkSequence = async (input: number[]) => {
     const isCorrect = input.every((val, index) => val === sequence[index]);
-    
+
+    // Show feedback
+    setPhase('feedback');
+    setFeedbackType(isCorrect ? 'correct' : 'incorrect');
+
+    // Animate feedback icon
+    feedbackScale.value = withSequence(
+      withTiming(0, { duration: 0 }),
+      withTiming(1.3, { duration: 300 }),
+      withTiming(1, { duration: 200 })
+    );
+    feedbackOpacity.value = withTiming(1, { duration: 300 });
+
+    // Wait for animation
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Fade out feedback
+    feedbackOpacity.value = withTiming(0, { duration: 300 });
+    await new Promise(resolve => setTimeout(resolve, 300));
+
     if (isCorrect) {
       setScore(prev => prev + level * 10);
       setLevel(prev => prev + 1);
-      setTimeout(startRound, 1000);
+      startRound();
     } else {
       setLives(prev => prev - 1);
       if (lives - 1 <= 0) {
         router.replace({ pathname: '/games/atention/result', params: { score: score + (level - 3) * 10 } });
       } else {
         // Retry same level with new sequence
-        setTimeout(startRound, 1000);
+        startRound();
       }
     }
   };
@@ -102,11 +124,16 @@ export default function AttentionGame() {
     opacity: digitOpacity.value,
   }));
 
+  const animatedFeedbackStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: feedbackScale.value }],
+    opacity: feedbackOpacity.value,
+  }));
+
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
       <View style={globalStyles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[globalStyles.iconButton, { backgroundColor: theme.surface }]}
           onPress={() => router.back()}
         >
@@ -114,11 +141,11 @@ export default function AttentionGame() {
         </TouchableOpacity>
         <View style={styles.livesContainer}>
           {[...Array(3)].map((_, i) => (
-            <MaterialIcons 
-              key={i} 
-              name="favorite" 
-              size={24} 
-              color={i < lives ? theme.primary : theme.surface} 
+            <MaterialIcons
+              key={i}
+              name="favorite"
+              size={24}
+              color={i < lives ? theme.primary : theme.surface}
             />
           ))}
         </View>
@@ -134,20 +161,33 @@ export default function AttentionGame() {
               </Text>
             </Animated.View>
           </View>
+        ) : phase === 'feedback' ? (
+          <View style={styles.feedbackContainer}>
+            <Animated.View style={[styles.feedbackIconContainer, animatedFeedbackStyle]}>
+              <MaterialIcons
+                name={feedbackType === 'correct' ? 'check-circle' : 'cancel'}
+                size={120}
+                color={feedbackType === 'correct' ? theme.primary : theme.error}
+              />
+              <Text style={[styles.feedbackText, { color: feedbackType === 'correct' ? theme.primary : theme.error }]}>
+                {feedbackType === 'correct' ? '¡Correcto!' : '¡Incorrecto!'}
+              </Text>
+            </Animated.View>
+          </View>
         ) : (
           <View style={styles.inputContainer}>
             <Text style={[styles.instructionText, { color: theme.textSecondary }]}>Repite la secuencia</Text>
-            
+
             {/* Slots */}
             <View style={styles.slotsContainer}>
-              {Array.from({ length: level }).map((_, i) => (
-                <View 
-                  key={i} 
+              {Array.from({ length: sequence.length }).map((_, i) => (
+                <View
+                  key={i}
                   style={[
-                    styles.slot, 
-                    { 
+                    styles.slot,
+                    {
                       borderColor: userSequence[i] !== undefined ? theme.primary : theme.surface,
-                      backgroundColor: theme.surface 
+                      backgroundColor: theme.surface
                     }
                   ]}
                 >
@@ -161,22 +201,22 @@ export default function AttentionGame() {
             {/* Keypad */}
             <View style={styles.keypad}>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                <TouchableOpacity 
-                  key={num} 
+                <TouchableOpacity
+                  key={num}
                   style={[styles.key, { backgroundColor: theme.surface }]}
                   onPress={() => handleInput(num)}
                 >
                   <Text style={[styles.keyText, { color: theme.text }]}>{num}</Text>
                 </TouchableOpacity>
               ))}
-              <View style={styles.key} /> 
-              <TouchableOpacity 
+              <View style={styles.key} />
+              <TouchableOpacity
                 style={[styles.key, { backgroundColor: theme.surface }]}
                 onPress={() => handleInput(0)}
               >
                 <Text style={[styles.keyText, { color: theme.text }]}>0</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.key, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}
                 onPress={handleBackspace}
               >
@@ -203,8 +243,22 @@ const styles = StyleSheet.create({
   },
   presentationContainer: {
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 120,
+    flex: 1,
+  },
+  feedbackContainer: {
+    alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+  },
+  feedbackIconContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  feedbackText: {
+    fontSize: 28,
+    fontWeight: 'bold',
   },
   instructionText: {
     fontSize: 18,
