@@ -53,39 +53,56 @@ export default function VoiceChallenge() {
         };
 
         return () => {
-            Voice.destroy().then(Voice.removeAllListeners);
+            // Guard destruction if native module is missing
+            if (typeof Voice?.destroy === 'function') {
+                Voice.destroy().then(Voice.removeAllListeners);
+            }
         };
     }, []);
 
     const startRecognizing = async () => {
+        if (typeof Voice?.start !== 'function') {
+            console.warn('Voice native module not available. Running in Expo Go?/web? Use a dev client or mock the module.');
+            setError('Voice native module not available');
+            return;
+        }
+
         try {
             await Voice.start("es-ES");
         } catch (e) {
             console.error(e);
+            setError(String(e));
         }
     };
 
     const stopRecognizing = async () => {
+        if (typeof Voice?.stop !== 'function') return;
         try {
             await Voice.stop();
         } catch (e) {
             console.error(e);
+            setError(String(e));
         }
     };
 
     const cancelRecognizing = async () => {
+        if (typeof Voice?.cancel !== 'function') return;
         try {
             await Voice.cancel();
         } catch (e) {
             console.error(e);
+            setError(String(e));
         }
     };
 
     const destroyRecognizer = async () => {
-        try {
-            await Voice.destroy();
-        } catch (e) {
-            console.error(e);
+        if (typeof Voice?.destroy === 'function') {
+            try {
+                await Voice.destroy();
+            } catch (e) {
+                console.error(e);
+                setError(String(e));
+            }
         }
         resetStates();
     };

@@ -56,7 +56,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           if (route.name === 'index') iconName = 'home';
           else if (route.name === 'games') iconName = 'fitness-center';
           else if (route.name === 'progress') iconName = 'bar-chart';
-          else if (route.name === 'profile') iconName = 'person';
+          //else if (route.name === 'profile') iconName = 'person';
 
           return (
             <TouchableOpacity
@@ -93,8 +93,7 @@ export default function TabLayout() {
       <Tabs.Screen name="index" options={{ title: 'Inicio' }} />
       <Tabs.Screen name="games" options={{ title: 'Gimnasio' }} />
       <Tabs.Screen name="progress" options={{ title: 'Progreso' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Perfil' }} />
-    </Tabs>
+      <Tabs.Screen name="form" options={{title: "Form",tabBarIcon: ({ color }) => <IconSymbol size={28} name="square.and.pencil" color={color} />,}}/></Tabs>
   );
 }
 
