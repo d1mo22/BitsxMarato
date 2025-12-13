@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -19,46 +19,18 @@ const LETTER_POOL = 'ABCDEFGHILMNOPQRSTUVZ'.split('');
 
 export default function VerbalFluencyGame() {
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [isActive, setIsActive] = useState(true);
 
-  // Game state
-  const [started, setStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
-  const [turn, setTurn] = useState<Turn>('letter');
-  const [usedWords, setUsedWords] = useState<string[]>([]);
-  const [score, setScore] = useState(0);
-
-  // Random params per entry
-  const [letter, setLetter] = useState('P');
-  const [categoryId, setCategoryId] = useState<'animals' | 'fruits' | 'colors' | 'cities' | 'jobs' | 'objects'>(
-    'animals'
-  );
-
-  // Voice UI
-  const [listening, setListening] = useState(false);
-  const [partial, setPartial] = useState<string | null>(null);
-  const [lastWord, setLastWord] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  // refs (evitan estado obsoleto)
-  const keepListening = useRef(false);
-  const lastPartial = useRef<string | null>(null);
-  const turnRef = useRef<Turn>('letter');
-  const usedRef = useRef<string[]>([]);
-  const startTime = useRef<number | null>(null);
-  const timerRef = useRef<NodeJS.Timer | null>(null);
-
-  useEffect(() => { turnRef.current = turn; }, [turn]);
-  useEffect(() => { usedRef.current = usedWords; }, [usedWords]);
-
-  // Theme
   const theme = {
     background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
     text: isDark ? Colors.white : Colors.gray900,
     textSecondary: isDark ? Colors.gray400 : Colors.gray500,
     surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
+    border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray200,
     primary: Colors.primary,
-    error: '#ef4444',
   };
 
   // Pulse animation
@@ -328,7 +300,10 @@ const CATEGORIES = useMemo(() => {
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <View style={globalStyles.header}>
-        <TouchableOpacity onPress={() => { stopAll(); router.back(); }}>
+        <TouchableOpacity
+          style={[globalStyles.iconButton, { backgroundColor: theme.surface }]}
+          onPress={() => router.back()}
+        >
           <MaterialIcons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
 
@@ -395,6 +370,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 256,
     height: 256,
+    marginTop: -95,
     borderRadius: 128,
     backgroundColor: 'rgba(54,226,123,0.18)',
   },

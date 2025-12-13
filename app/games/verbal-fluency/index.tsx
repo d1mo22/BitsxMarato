@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,25 +9,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function VerbalFluencyIntro() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  const theme = {
-    background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-    text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-    surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray200,
-    primary: Colors.primary,
-  };
+  const { colors: theme, isDark } = useTheme();
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      
+
       {/* Header */}
       <View style={globalStyles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[globalStyles.iconButton, { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border }]}
           onPress={() => router.back()}
         >
@@ -37,16 +27,16 @@ export default function VerbalFluencyIntro() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView 
-        style={globalStyles.scrollView} 
+      <ScrollView
+        style={globalStyles.scrollView}
         contentContainerStyle={[globalStyles.scrollContent, { paddingHorizontal: 24 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Illustration */}
         <View style={styles.heroContainer}>
           <View style={[styles.heroCircle, { backgroundColor: isDark ? '#1a332a' : '#e0f7fa', borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)' }]}>
-            <Image 
-              source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuC-UpuOzWTkW1C_I6I3xCbOVtiM20W-7rDITIGc_xopOCBCHlxI-Vzgpv3UE44BD_d5fM-uHsDbI499SK_48sFUqChytwK-is9jdjFUPwPlqksEMXmeaCXRhYDEIl8Nxl_ymwsxAUim5ZhakxluCoNLsoBmSXXr9qkSbrUe637X6PL2i4Cvzmsm324mZGYVx3ju4PQvbXWPskfffuTZAwqZQZNtiDyTYcyMfU0ywBa-LCTKHK9nOrF0B5oj0CRVr9mYiDxn0YlTAe0" }} 
+            <Image
+              source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuC-UpuOzWTkW1C_I6I3xCbOVtiM20W-7rDITIGc_xopOCBCHlxI-Vzgpv3UE44BD_d5fM-uHsDbI499SK_48sFUqChytwK-is9jdjFUPwPlqksEMXmeaCXRhYDEIl8Nxl_ymwsxAUim5ZhakxluCoNLsoBmSXXr9qkSbrUe637X6PL2i4Cvzmsm324mZGYVx3ju4PQvbXWPskfffuTZAwqZQZNtiDyTYcyMfU0ywBa-LCTKHK9nOrF0B5oj0CRVr9mYiDxn0YlTAe0" }}
               style={styles.heroImage}
               resizeMode="contain"
             />
@@ -69,7 +59,7 @@ export default function VerbalFluencyIntro() {
             </View>
             <Text style={[styles.instructionTitle, { color: theme.text }]}>Instrucciones</Text>
           </View>
-          
+
           <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
             Reto Alterno: Di una palabra que empiece con <Text style={{ color: Colors.primary, fontWeight: 'bold' }}>P</Text>, luego un nombre de Animal.
           </Text>
@@ -99,7 +89,7 @@ export default function VerbalFluencyIntro() {
 
       {/* Bottom Action */}
       <View style={[styles.footer, { backgroundColor: theme.background, borderTopColor: theme.border }]}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.startButton}
           onPress={() => router.push('/games/verbal-fluency/game')}
         >

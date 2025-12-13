@@ -1,387 +1,359 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, useColorScheme, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+
+
+import { Colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/use-theme';
+import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import * as Speech from 'expo-speech';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { width } = Dimensions.get('window');
-
-export default function RevesGameScreen() {
+export default function AttentionGame() {
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { colors: theme, isDark } = useTheme();
 
-    // Game State
-    const [input, setInput] = useState<string[]>(['9']); // Initial state matching the design
-    const maxLength = 3; // Matching the 3 slots in design
+    const [level, setLevel] = useState(2); // Sequence length (2 to 9)
+    const [trial, setTrial] = useState(1); // 1 or 2
+    const [failures, setFailures] = useState(0);
+    const [sequence, setSequence] = useState<number[]>([]);
+    const [userSequence, setUserSequence] = useState<number[]>([]);
+    const [phase, setPhase] = useState<'presentation' | 'input' | 'feedback'>('presentation');
+    const [currentDigit, setCurrentDigit] = useState<number | null>(null);
+    const [score, setScore] = useState(0);
+    const [feedbackType, setFeedbackType] = useState<'correct' | 'incorrect' | null>(null);
 
-    const handlePressNumber = (num: string) => {
-        if (input.length < maxLength) {
-            setInput([...input, num]);
+    // Animation values
+    const digitScale = useSharedValue(0);
+    const digitOpacity = useSharedValue(0);
+    const feedbackScale = useSharedValue(0);
+    const feedbackOpacity = useSharedValue(0);
+
+    // Start game
+    useEffect(() => {
+        startRound(4);
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            try {
+                Speech.stop();
+            } catch (e) {
+                // ignore
+            }
+        };
+    }, []);
+
+    const startRound = (currentLevel = level) => {
+        const newSequence = Array.from({ length: currentLevel }, () => Math.floor(Math.random() * 10));
+        setSequence(newSequence);
+        setUserSequence([]);
+        setPhase('presentation');
+        playSequence(newSequence);
+    };
+
+    const playSequence = async (seq: number[]) => {
+        for (let i = 0; i < seq.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 500)); // Pause before digit
+            setCurrentDigit(seq[i]);
+
+            // Start animation
+            digitScale.value = withSequence(withTiming(1.2, { duration: 200 }), withTiming(1, { duration: 200 }));
+            digitOpacity.value = withTiming(1, { duration: 200 });
+
+            // Speak immediately
+            try {
+                Speech.speak(String(seq[i]), {
+                    language: 'es-US',
+                });
+            } catch (e) {
+                // ignore
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Show digit
+
+            digitOpacity.value = withTiming(0, { duration: 200 });
+            await new Promise(resolve => setTimeout(resolve, 200)); // Fade out
+            setCurrentDigit(null);
+        }
+        setPhase('input');
+    };
+
+    const handleInput = (num: number) => {
+        if (phase !== 'input') return;
+
+        const newUserSequence = [...userSequence, num];
+        setUserSequence(newUserSequence);
+
+        if (newUserSequence.length === sequence.length) {
+            checkSequence(newUserSequence);
         }
     };
 
     const handleBackspace = () => {
-        setInput(input.slice(0, -1));
+        if (phase !== 'input') return;
+        setUserSequence(prev => prev.slice(0, -1));
     };
 
-    const handleConfirm = () => {
-        router.push('/games/reves/result');
-    };
+    const checkSequence = async (input: number[]) => {
+        // Check against reversed sequence
+        const isCorrect = input.every((val, index) => val === sequence[sequence.length - 1 - index]);
 
-    const renderInputSlots = () => {
-        const slots = [];
-        for (let i = 0; i < maxLength; i++) {
-            const hasValue = i < input.length;
-            const isActive = i === input.length;
-            const value = hasValue ? input[i] : '';
+        // Update failures count for this level
+        const currentFailures = isCorrect ? failures : failures + 1;
+        if (!isCorrect) setFailures(currentFailures);
 
-            slots.push(
-                <View
-                    key={i}
-                    style={[
-                        styles.slot,
-                        {
-                            backgroundColor: isDark ? '#1e293b' : '#fff',
-                            borderColor: isActive ? '#5142f0' : (hasValue ? '#5142f0' : 'transparent'),
-                            borderWidth: 2,
-                        },
-                        isActive && styles.activeSlotRing
-                    ]}
-                >
-                    {hasValue ? (
-                        <Text style={[styles.slotText, { color: isDark ? '#fff' : '#1e293b' }]}>{value}</Text>
-                    ) : isActive ? (
-                        <View style={styles.cursor} />
-                    ) : (
-                        <View style={[styles.dot, { backgroundColor: isDark ? '#475569' : '#cbd5e1' }]} />
-                    )}
-                </View>
-            );
+        // Show feedback
+        setPhase('feedback');
+        setFeedbackType(isCorrect ? 'correct' : 'incorrect');
+
+        // Animate feedback icon
+        feedbackScale.value = withSequence(
+            withTiming(0, { duration: 0 }),
+            withTiming(1.3, { duration: 300 }),
+            withTiming(1, { duration: 200 })
+        );
+        feedbackOpacity.value = withTiming(1, { duration: 300 });
+
+        // Wait for animation
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Fade out feedback
+        feedbackOpacity.value = withTiming(0, { duration: 300 });
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        if (isCorrect) {
+            setScore(prev => prev + level * 10);
         }
-        return slots;
+
+        // Game Logic
+        if (trial === 1) {
+            // Move to second trial of same level
+            setTrial(2);
+            startRound(level);
+        } else {
+            // End of second trial
+            if (currentFailures >= 2) {
+                // Failed both trials (or failed 2 times in this level)
+                router.replace({ pathname: '/games/atention/result', params: { score: score } });
+            } else {
+                // Passed at least one trial
+                if (level >= 8) {
+                    // Max level reached
+                    router.replace({ pathname: '/games/atention/result', params: { score: score + level * 10 } });
+                } else {
+                    // Next level
+                    const nextLevel = level + 1;
+                    setLevel(nextLevel);
+                    setTrial(1);
+                    setFailures(0);
+                    startRound(nextLevel);
+                }
+            }
+        }
     };
+
+    const animatedDigitStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: digitScale.value }],
+        opacity: digitOpacity.value,
+    }));
+
+    const animatedFeedbackStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: feedbackScale.value }],
+        opacity: feedbackOpacity.value,
+    }));
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#121022' : '#F2F0FF' }]}>
-            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-
+        <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={globalStyles.header}>
                 <TouchableOpacity
+                    style={[globalStyles.iconButton, { backgroundColor: theme.surface }]}
                     onPress={() => router.back()}
-                    style={[styles.iconButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'transparent' }]}
                 >
-                    <MaterialIcons name="close" size={24} color={isDark ? '#cbd5e1' : '#656189'} />
+                    <MaterialIcons name="arrow-back" size={24} color={theme.text} />
                 </TouchableOpacity>
-
-                <View style={styles.headerTitleContainer}>
-                    <Text style={[styles.headerTitle, { color: isDark ? '#fff' : '#1e293b' }]}>Memoria de Trabajo</Text>
-                    <Text style={[styles.headerSubtitle, { color: isDark ? '#94a3b8' : '#64748b' }]}>Dígitos Inversos</Text>
-                </View>
-
-                <TouchableOpacity
-                    style={[styles.iconButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'transparent' }]}
-                >
-                    <MaterialIcons name="help-outline" size={24} color={isDark ? '#cbd5e1' : '#656189'} />
-                </TouchableOpacity>
-            </View>
-
-            {/* Progress Bar */}
-            <View style={styles.progressContainer}>
-                <View style={styles.progressLabels}>
-                    <Text style={[styles.progressLabel, { color: isDark ? '#94a3b8' : '#64748b' }]}>PROGRESO</Text>
-                    <Text style={styles.progressValue}>2/5</Text>
-                </View>
-                <View style={[styles.track, { backgroundColor: isDark ? '#1e293b' : '#fff' }]}>
-                    <View style={[styles.fill, { width: '40%' }]} />
+                <View style={styles.livesContainer}>
+                    <Text style={{ color: theme.text, fontWeight: '600', fontSize: 16 }}>
+                        Nivel {level - 3} <Text style={{ color: theme.textSecondary, fontSize: 14 }}>(Longitud {level})</Text>
+                    </Text>
                 </View>
             </View>
 
-            {/* Main Task Area */}
-            <View style={styles.mainContent}>
-                {/* Rule Badge */}
-                <View style={[styles.ruleBadge, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.7)', borderColor: isDark ? '#334155' : 'rgba(255, 255, 255, 0.4)' }]}>
-                    <MaterialIcons name="swap-horiz" size={20} color="#5142f0" />
-                    <Text style={[styles.ruleText, { color: isDark ? '#e2e8f0' : '#475569' }]}>Regla: Orden Inverso</Text>
-                </View>
-
-                {/* Input Display */}
-                <View style={styles.inputContainer}>
-                    {/* Reverse Indicator */}
-                    <View style={styles.reverseIndicator}>
-                        <MaterialIcons name="reply" size={32} color="#5142f0" style={{ transform: [{ rotateY: '180deg' }] }} />
-                        <Text style={styles.reverseText}>AQUÍ</Text>
+            <View style={styles.content}>
+                {phase === 'presentation' ? (
+                    <View style={styles.presentationContainer}>
+                        <Text style={[styles.instructionText, { color: theme.textSecondary }]}>Memoriza...</Text>
+                        <Animated.View style={[styles.digitContainer, animatedDigitStyle]}>
+                            <Text style={[styles.digitText, { color: theme.primary }]}>
+                                {currentDigit !== null ? currentDigit : ''}
+                            </Text>
+                        </Animated.View>
                     </View>
-
-                    <View style={styles.slotsContainer}>
-                        {renderInputSlots()}
+                ) : phase === 'feedback' ? (
+                    <View style={styles.feedbackContainer}>
+                        <Animated.View style={[styles.feedbackIconContainer, animatedFeedbackStyle]}>
+                            <MaterialIcons
+                                name={feedbackType === 'correct' ? 'check-circle' : 'cancel'}
+                                size={120}
+                                color={feedbackType === 'correct' ? theme.primary : theme.error}
+                            />
+                            <Text style={[styles.feedbackText, { color: feedbackType === 'correct' ? theme.primary : theme.error }]}>
+                                {feedbackType === 'correct' ? '¡Correcto!' : '¡Incorrecto!'}
+                            </Text>
+                        </Animated.View>
                     </View>
-                </View>
+                ) : (
+                    <View style={styles.inputContainer}>
+                        <Text style={[styles.instructionText, { color: theme.textSecondary }]}>Repite la secuencia al reves</Text>
 
-                <Text style={[styles.instructionTitle, { color: isDark ? '#fff' : '#1e293b' }]}>
-                    Ingresa los números{'\n'}
-                    <Text style={{ color: '#5142f0' }}>al revés</Text>
-                </Text>
+                        {/* Slots */}
+                        <View style={styles.slotsContainer}>
+                            {Array.from({ length: sequence.length }).map((_, i) => (
+                                <View
+                                    key={i}
+                                    style={[
+                                        styles.slot,
+                                        {
+                                            borderColor: userSequence[i] !== undefined ? theme.primary : theme.surface,
+                                            backgroundColor: theme.surface
+                                        }
+                                    ]}
+                                >
+                                    <Text style={[styles.slotText, { color: theme.text }]}>
+                                        {userSequence[i] !== undefined ? userSequence[i] : ''}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+
+                        {/* Keypad */}
+                        <View style={styles.keypad}>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                                <TouchableOpacity
+                                    key={num}
+                                    style={[styles.key, { backgroundColor: theme.surface }]}
+                                    onPress={() => handleInput(num)}
+                                >
+                                    <Text style={[styles.keyText, { color: theme.text }]}>{num}</Text>
+                                </TouchableOpacity>
+                            ))}
+                            <View style={styles.key} />
+                            <TouchableOpacity
+                                style={[styles.key, { backgroundColor: theme.surface }]}
+                                onPress={() => handleInput(0)}
+                            >
+                                <Text style={[styles.keyText, { color: theme.text }]}>0</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.key, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}
+                                onPress={handleBackspace}
+                            >
+                                <MaterialIcons name="backspace" size={24} color={theme.error} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
             </View>
-
-            {/* Keypad */}
-            <View style={[styles.keypadContainer, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.6)' : 'rgba(255, 255, 255, 0.6)', borderColor: isDark ? '#334155' : 'rgba(255, 255, 255, 0.5)' }]}>
-                <View style={styles.keypadGrid}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                        <TouchableOpacity
-                            key={num}
-                            onPress={() => handlePressNumber(num.toString())}
-                            style={[styles.key, { backgroundColor: isDark ? '#1e293b' : '#fff', borderBottomColor: isDark ? '#334155' : '#f1f5f9' }]}
-                        >
-                            <Text style={[styles.keyText, { color: isDark ? '#f1f5f9' : '#334155' }]}>{num}</Text>
-                        </TouchableOpacity>
-                    ))}
-                    {/* Empty space */}
-                    <View />
-                    {/* Zero */}
-                    <TouchableOpacity
-                        onPress={() => handlePressNumber('0')}
-                        style={[styles.key, { backgroundColor: isDark ? '#1e293b' : '#fff', borderBottomColor: isDark ? '#334155' : '#f1f5f9' }]}
-                    >
-                        <Text style={[styles.keyText, { color: isDark ? '#f1f5f9' : '#334155' }]}>0</Text>
-                    </TouchableOpacity>
-                    {/* Backspace */}
-                    <TouchableOpacity
-                        onPress={handleBackspace}
-                        style={styles.backspaceKey}
-                    >
-                        <MaterialIcons name="backspace" size={28} color={isDark ? '#64748b' : '#94a3b8'} />
-                    </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity
-                    style={styles.confirmButton}
-                    onPress={handleConfirm}
-                >
-                    <Text style={styles.confirmButtonText}>Confirmar</Text>
-                    <MaterialIcons name="check" size={20} color="#fff" />
-                </TouchableOpacity>
-            </View>
-
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
-    },
-    iconButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    headerTitleContainer: {
-        alignItems: 'center',
-    },
-    headerTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    headerSubtitle: {
-        fontSize: 12,
-        fontWeight: '500',
-    },
-    progressContainer: {
-        paddingHorizontal: 24,
-        paddingBottom: 8,
-    },
-    progressLabels: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-        marginBottom: 8,
-    },
-    progressLabel: {
-        fontSize: 12,
-        fontWeight: '600',
-        letterSpacing: 0.5,
-    },
-    progressValue: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#5142f0',
-    },
-    track: {
-        height: 8,
-        borderRadius: 4,
-        overflow: 'hidden',
-    },
-    fill: {
-        height: '100%',
-        backgroundColor: '#5142f0',
-        borderRadius: 4,
-    },
-    mainContent: {
+    content: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: 24,
-        marginTop: -32,
+        paddingBottom: 40,
     },
-    ruleBadge: {
+    livesContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 999,
-        borderWidth: 1,
-        marginBottom: 32,
-        shadowColor: '#5142f0',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 20,
-        elevation: 2,
+        gap: 4,
     },
-    ruleText: {
-        fontSize: 14,
-        fontWeight: '600',
+    presentationContainer: {
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingTop: 120,
+        flex: 1,
+    },
+    feedbackContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+    },
+    feedbackIconContainer: {
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+    feedbackText: {
+        fontSize: 28,
+        fontWeight: 'bold',
+    },
+    instructionText: {
+        fontSize: 18,
+        marginBottom: 40,
+    },
+    digitContainer: {
+        width: 200,
+        height: 200,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    digitText: {
+        fontSize: 120,
+        fontWeight: 'bold',
     },
     inputContainer: {
+        flex: 1,
         width: '100%',
-        maxWidth: 320,
-        position: 'relative',
-        marginBottom: 32,
-    },
-    reverseIndicator: {
-        position: 'absolute',
-        left: -16,
-        top: '50%',
-        transform: [{ translateY: -20 }, { translateX: -40 }],
         alignItems: 'center',
-        opacity: 0.8,
-    },
-    reverseText: {
-        fontSize: 10,
-        fontWeight: 'bold',
-        color: '#5142f0',
-        marginTop: 4,
-        letterSpacing: 0.5,
+        justifyContent: 'space-between',
+        paddingVertical: 20,
     },
     slotsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
         gap: 12,
+        marginBottom: 40,
+        paddingHorizontal: 20,
     },
     slot: {
-        flex: 1,
-        aspectRatio: 3 / 4,
-        borderRadius: 16,
+        width: 50,
+        height: 60,
+        borderRadius: 12,
+        borderWidth: 2,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#5142f0',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 20,
-        elevation: 2,
-    },
-    activeSlotRing: {
-        shadowColor: '#5142f0',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        elevation: 4,
     },
     slotText: {
         fontSize: 32,
         fontWeight: 'bold',
     },
-    cursor: {
-        width: 2,
-        height: 32,
-        backgroundColor: '#5142f0',
-        borderRadius: 1,
-    },
-    dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-    },
-    instructionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        lineHeight: 28,
-    },
-    keypadContainer: {
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        borderTopWidth: 1,
-        padding: 24,
-        paddingBottom: 32,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -10 },
-        shadowOpacity: 0.05,
-        shadowRadius: 40,
-        elevation: 10,
-    },
-    keypadGrid: {
+    keypad: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
         gap: 16,
-        maxWidth: 340,
-        alignSelf: 'center',
-        marginBottom: 24,
+        width: '100%',
+        maxWidth: 360,
     },
     key: {
-        width: '30%',
-        height: 64,
-        borderRadius: 16,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         alignItems: 'center',
         justifyContent: 'center',
-        borderBottomWidth: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
     keyText: {
-        fontSize: 24,
+        fontSize: 32,
         fontWeight: '600',
-    },
-    backspaceKey: {
-        width: '30%',
-        height: 64,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    confirmButton: {
-        width: '100%',
-        maxWidth: 340,
-        height: 56,
-        backgroundColor: '#5142f0',
-        borderRadius: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        alignSelf: 'center',
-        gap: 8,
-        shadowColor: '#5142f0',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        elevation: 4,
-    },
-    confirmButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
     },
 });

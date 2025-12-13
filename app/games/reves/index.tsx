@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,19 +9,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RevesInstructionScreen() {
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { colors: baseTheme, isDark } = useTheme();
 
     const theme = {
-        background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-        text: isDark ? Colors.white : Colors.gray900,
-        textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-        surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-        primary: Colors.primary,
-        border: isDark ? 'rgba(255,255,255,0.1)' : Colors.gray200,
-        cardBg: isDark ? '#1c2e24' : Colors.white,
+        ...baseTheme,
+        cardBg: baseTheme.surface,
         cardBorder: isDark ? '#2a4535' : '#eef4f0',
-        slotBg: isDark ? '#112118' : '#f6f8f7',
+        slotBg: baseTheme.background,
     };
 
     return (
@@ -38,15 +32,6 @@ export default function RevesInstructionScreen() {
                 </TouchableOpacity>
                 <Text style={[styles.headerTitle, { color: theme.text }]}>Memoria de Trabajo</Text>
                 <View style={{ width: 40 }} />
-            </View>
-
-            {/* Progress Indicators */}
-            <View style={styles.progressContainer}>
-                <View style={[styles.dot, { backgroundColor: theme.border }]} />
-                <View style={[styles.bar, { backgroundColor: theme.primary }]} />
-                <View style={[styles.dot, { backgroundColor: theme.border }]} />
-                <View style={[styles.dot, { backgroundColor: theme.border }]} />
-                <View style={[styles.dot, { backgroundColor: theme.border }]} />
             </View>
 
             <ScrollView

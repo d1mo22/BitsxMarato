@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -11,16 +11,7 @@ export default function AttentionResult() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const score = params.score || 0;
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  const theme = {
-    background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-    text: isDark ? Colors.white : Colors.gray900,
-    textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-    surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-    primary: Colors.primary,
-  };
+  const { colors: theme, isDark } = useTheme();
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
@@ -28,7 +19,7 @@ export default function AttentionResult() {
         <View style={styles.iconContainer}>
           <MaterialIcons name="emoji-events" size={80} color={theme.primary} />
         </View>
-        
+
         <Text style={[styles.title, { color: theme.text }]}>¡Bien hecho!</Text>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
           Has completado el ejercicio de atención.
@@ -39,7 +30,7 @@ export default function AttentionResult() {
           <Text style={[styles.scoreValue, { color: theme.primary }]}>{score}</Text>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={() => router.replace('/(tabs)/games')}
         >
