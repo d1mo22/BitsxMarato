@@ -1,35 +1,33 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "bitsxmarato:cogForm:v2";
+const STORAGE_KEY = "bitsxmarato:cogForm:v3";
 
 export type Domain = "atencio" | "velocitat" | "fluencia" | "memoria" | "executives";
 
+export type DailyCounts = Record<string, Record<string, number>>;
+// daily["2025-12-13"]["room_forget"] = 2
+
 export type CogFormState = {
   mood: "bien" | "regular" | "mal" | null;
-  // Aquí guardem les afirmacions marcades (true/false)
-  items: Record<string, boolean>;
+  daily: DailyCounts;
   notes: string;
   updatedAt: number | null;
 };
 
 const DEFAULT_STATE: CogFormState = {
   mood: null,
-  items: {
-    room_forget: false,
-    slow_activity: false,
-    word_block: false,
-    lose_thread: false,
-    recent_forget: false,
-    longterm_forget: false,
-    decision_hard: false,
-    plan_day: false,
-    brain_fog: false,
-    think_slower: false,
-  },
+  daily: {},
   notes: "",
   updatedAt: null,
 };
+
+function dayKey(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 async function loadState(): Promise<CogFormState> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
@@ -40,7 +38,7 @@ async function loadState(): Promise<CogFormState> {
     return {
       ...DEFAULT_STATE,
       ...parsed,
-      items: { ...DEFAULT_STATE.items, ...(parsed?.items ?? {}) },
+      daily: { ...(parsed?.daily ?? {}) },
     };
   } catch {
     return DEFAULT_STATE;
@@ -54,6 +52,8 @@ async function saveState(state: CogFormState) {
 export function useFormStore() {
   const [state, setState] = useState<CogFormState>(DEFAULT_STATE);
   const [ready, setReady] = useState(false);
+
+  const today = useMemo(() => dayKey(), []);
 
   useEffect(() => {
     (async () => {
@@ -71,13 +71,38 @@ export function useFormStore() {
     });
   }, []);
 
-  const toggleItem = useCallback((key: string) => {
+  // ✅ suma +1 a la pregunta del día
+  const incrementItem = useCallback((key: string) => {
     setState((prev) => {
-      const next = {
+      const t = dayKey();
+      const dayCounts = { ...(prev.daily[t] ?? {}) };
+      dayCounts[key] = (dayCounts[key] ?? 0) + 1;
+
+      const next: CogFormState = {
         ...prev,
-        items: { ...prev.items, [key]: !prev.items[key] },
+        daily: { ...prev.daily, [t]: dayCounts },
         updatedAt: Date.now(),
       };
+
+      void saveState(next);
+      return next;
+    });
+  }, []);
+
+  // ✅ (opcional) restar (si luego lo quieres)
+  const decrementItem = useCallback((key: string) => {
+    setState((prev) => {
+      const t = dayKey();
+      const dayCounts = { ...(prev.daily[t] ?? {}) };
+      const current = dayCounts[key] ?? 0;
+      dayCounts[key] = Math.max(current - 1, 0);
+
+      const next: CogFormState = {
+        ...prev,
+        daily: { ...prev.daily, [t]: dayCounts },
+        updatedAt: Date.now(),
+      };
+
       void saveState(next);
       return next;
     });
@@ -98,5 +123,23 @@ export function useFormStore() {
     });
   }, []);
 
-  return { state, ready, setMood, toggleItem, setNotes, reset };
+  const getTodayCount = useCallback(
+    (key: string) => {
+      const t = dayKey();
+      return state.daily[t]?.[key] ?? 0;
+    },
+    [state.daily]
+  );
+
+  return {
+    state,
+    ready,
+    today,
+    setMood,
+    incrementItem,
+    decrementItem, // lo dejamos por si lo quieres luego
+    setNotes,
+    reset,
+    getTodayCount,
+  };
 }

@@ -62,19 +62,22 @@ function Pill({
   );
 }
 
+/** ✅ Fila sin toggle: tocar = suma +1 */
 function ItemRow({
-  checked,
+  count,
   onPress,
   text,
   domain,
   theme,
 }: {
-  checked: boolean;
+  count: number;
   onPress: () => void;
   text: string;
   domain: string;
   theme: any;
 }) {
+  const active = count > 0;
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -82,34 +85,57 @@ function ItemRow({
       style={[
         styles.itemRow,
         {
-          borderColor: checked ? theme.primary : theme.border,
-          backgroundColor: checked ? theme.selectedBg : theme.surface,
+          borderColor: active ? theme.primary : theme.border,
+          backgroundColor: active ? theme.selectedBg : theme.surface,
         },
       ]}
     >
-      <View style={styles.itemLeft}>
-        <MaterialIcons
-          name={checked ? "check-box" : "check-box-outline-blank"}
-          size={22}
-          color={checked ? theme.primary : theme.textSecondary}
-        />
-      </View>
+      {/* 🔵 Indicador visual */}
+      <View
+        style={[
+          styles.dot,
+          {
+            backgroundColor: active ? theme.primary : theme.border,
+            opacity: active ? 1 : 0.6,
+          },
+        ]}
+      />
 
-      <View style={{ flex: 1, gap: 6 }}>
+      <View style={{ flex: 1, gap: 8 }}>
         <Text style={[styles.itemText, { color: theme.text }]}>{text}</Text>
-        <View style={[styles.badge, { backgroundColor: theme.badgeBg, borderColor: theme.border }]}>
-          <Text style={[styles.badgeText, { color: theme.textSecondary }]}>{domain}</Text>
+
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <View style={[styles.badge, { backgroundColor: theme.badgeBg, borderColor: theme.border }]}>
+            <Text style={[styles.badgeText, { color: theme.textSecondary }]}>{domain}</Text>
+          </View>
+
+          {/* ✅ Indicador principal */}
+          <View
+            style={[
+              styles.countPill,
+              {
+                backgroundColor: active ? theme.primary : theme.badgeBg,
+                borderColor: active ? theme.primary : theme.border,
+              },
+            ]}
+          >
+            <Text style={[styles.countText, { color: active ? "#fff" : theme.text }]}>
+              Avui: {count}
+            </Text>
+          </View>
         </View>
+
+        <Text style={{ color: theme.textSecondary, fontSize: 12 }}>
+          Toca cada vegada que et passi (suma +1)
+        </Text>
       </View>
     </TouchableOpacity>
   );
 }
 
 export default function FormTabScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const isDark = useColorScheme() === "dark";
 
-  // 🎨 Colors accessibles (contrast + no dependre només del verd)
   const theme = useMemo(
     () => ({
       background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
@@ -117,7 +143,7 @@ export default function FormTabScreen() {
       textSecondary: isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.62)",
       surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
       border: isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.12)",
-      primary: "#1F7A5C", // verd més fosc (millor contrast que verd clar)
+      primary: "#1F7A5C",
       pillBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
       selectedBg: isDark ? "rgba(31,122,92,0.18)" : "rgba(31,122,92,0.10)",
       badgeBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
@@ -125,65 +151,24 @@ export default function FormTabScreen() {
     [isDark]
   );
 
-  const { state, ready, setMood, toggleItem, setNotes, reset } = useFormStore();
+  const { state, ready, today, setMood, incrementItem, setNotes, reset, getTodayCount } = useFormStore();
 
   const ITEMS: ItemDef[] = useMemo(
     () => [
-      {
-        key: "room_forget",
-        text: "He anat a un lloc de l’habitació i, quan hi he arribat, no he recordat què hi anava a fer.",
-        domain: "atencio",
-      },
-      {
-        key: "slow_activity",
-        text: "He trigat més del normal a fer una activitat que abans feia més ràpid.",
-        domain: "velocitat",
-      },
-      {
-        key: "word_block",
-        text: "Volia dir una paraula i no m’ha sortit, o n’he dit una altra sense voler.",
-        domain: "fluencia",
-      },
-      {
-        key: "lose_thread",
-        text: "Quan estava parlant amb algú, he perdut el fil de la conversa.",
-        domain: "atencio",
-      },
-      {
-        key: "recent_forget",
-        text: "M’han preguntat per una cosa que m’havien dit fa poc i no me n’he recordat.",
-        domain: "memoria",
-      },
-      {
-        key: "longterm_forget",
-        text: "He tingut problemes per recordar informació que ja sabia prèviament.",
-        domain: "memoria",
-      },
-      {
-        key: "decision_hard",
-        text: "He tingut problemes per prendre una decisió que abans no m’hauria costat.",
-        domain: "executives",
-      },
-      {
-        key: "plan_day",
-        text: "He tingut dificultats per planificar el meu dia.",
-        domain: "executives",
-      },
-      {
-        key: "brain_fog",
-        text: "He sentit sensació de nebulosa mental.",
-        domain: "executives",
-      },
-      {
-        key: "think_slower",
-        text: "He sentit que penso més lenta avui.",
-        domain: "velocitat",
-      },
+      { key: "room_forget", text: "He anat a un lloc de l’habitació i, quan hi he arribat, no he recordat què hi anava a fer.", domain: "atencio" },
+      { key: "slow_activity", text: "He trigat més del normal a fer una activitat que abans feia més ràpid.", domain: "velocitat" },
+      { key: "word_block", text: "Volia dir una paraula i no m’ha sortit, o n’he dit una altra sense voler.", domain: "fluencia" },
+      { key: "lose_thread", text: "Quan estava parlant amb algú, he perdut el fil de la conversa.", domain: "atencio" },
+      { key: "recent_forget", text: "M’han preguntat per una cosa que m’havien dit fa poc i no me n’he recordat.", domain: "memoria" },
+      { key: "longterm_forget", text: "He tingut problemes per recordar informació que ja sabia prèviament.", domain: "memoria" },
+      { key: "decision_hard", text: "He tingut problemes per prendre una decisió que abans no m’hauria costat.", domain: "executives" },
+      { key: "plan_day", text: "He tingut dificultats per planificar el meu dia.", domain: "executives" },
+      { key: "brain_fog", text: "He sentit sensació de nebulosa mental.", domain: "executives" },
+      { key: "think_slower", text: "He sentit que penso més lenta avui.", domain: "velocitat" },
     ],
     []
   );
 
-  // 📊 Derivació: quines àrees “pateix” segons seleccions
   const summary = useMemo(() => {
     const counts: Record<Domain, number> = {
       atencio: 0,
@@ -194,7 +179,8 @@ export default function FormTabScreen() {
     };
 
     for (const it of ITEMS) {
-      if (state.items[it.key]) counts[it.domain] += 1;
+      const c = getTodayCount(it.key);
+      if (c > 0) counts[it.domain] += c; // suma episodios de hoy
     }
 
     const affected = (Object.keys(counts) as Domain[])
@@ -202,7 +188,7 @@ export default function FormTabScreen() {
       .sort((a, b) => counts[b] - counts[a]);
 
     return { counts, affected };
-  }, [ITEMS, state.items]);
+  }, [ITEMS, getTodayCount]);
 
   if (!ready) {
     return (
@@ -225,10 +211,18 @@ export default function FormTabScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        {/* Mood (opcional) */}
+        {/* Día */}
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Avui ({today})</Text>
+          <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
+            Toca una afirmació cada vegada que t’hagi passat. Es guarda automàticament.
+          </Text>
+        </View>
+
+        {/* Mood */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>Com et sents?</Text>
-          <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>Opcional. Es guarda automàticament.</Text>
+          <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>Opcional.</Text>
 
           <View style={styles.rowWrap}>
             <Pill label="🙂 Bé" active={state.mood === "bien"} onPress={() => setMood("bien")} theme={theme} />
@@ -238,36 +232,38 @@ export default function FormTabScreen() {
           </View>
         </View>
 
-        {/* Afirmacions */}
+        {/* Preguntas */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>Avui m’ha passat…</Text>
-          <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
-            Marca totes les afirmacions que s’apliquin. No depèn només del color (hi ha icones).
-          </Text>
 
-          <View style={{ gap: 12 }}>
-            {ITEMS.map((it) => (
-              <ItemRow
-                key={it.key}
-                checked={!!state.items[it.key]}
-                onPress={() => toggleItem(it.key)}
-                text={it.text}
-                domain={domainLabel(it.domain)}
-                theme={theme}
-              />
-            ))}
+          <View style={{ gap: 12, marginTop: 12 }}>
+            {ITEMS.map((it) => {
+              const count = getTodayCount(it.key);
+              return (
+                <ItemRow
+                  key={it.key}
+                  count={count}
+                  onPress={() => incrementItem(it.key)} // ✅ sumar siempre
+                  text={it.text}
+                  domain={domainLabel(it.domain)}
+                  theme={theme}
+                />
+              );
+            })}
           </View>
         </View>
 
-        {/* Resum */}
+        {/* Resumen */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Resum d’àrees</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Resum d’àrees (avui)</Text>
           <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
-            Àrees amb almenys una afirmació marcada:
+            Total d’episodis avui per àrea:
           </Text>
 
           {summary.affected.length === 0 ? (
-            <Text style={{ color: theme.textSecondary, fontWeight: "700" }}>Cap àrea marcada encara.</Text>
+            <Text style={{ color: theme.textSecondary, fontWeight: "700" }}>
+              Encara no has marcat cap episodi.
+            </Text>
           ) : (
             <View style={{ gap: 10 }}>
               {summary.affected.map((d) => (
@@ -289,7 +285,6 @@ export default function FormTabScreen() {
         {/* Notes */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>Notes</Text>
-          <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>Opcional.</Text>
 
           <TextInput
             value={state.notes}
@@ -299,11 +294,7 @@ export default function FormTabScreen() {
             multiline
             style={[
               styles.input,
-              {
-                color: theme.text,
-                borderColor: theme.border,
-                backgroundColor: theme.pillBg,
-              },
+              { color: theme.text, borderColor: theme.border, backgroundColor: theme.pillBg },
             ]}
           />
         </View>
@@ -313,27 +304,11 @@ export default function FormTabScreen() {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 14,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-  },
-  cardSubtitle: {
-    marginTop: 6,
-    marginBottom: 14,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  rowWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
+  card: { borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 14 },
+  cardTitle: { fontSize: 18, fontWeight: "800" },
+  cardSubtitle: { marginTop: 6, fontSize: 13, lineHeight: 18 },
+
+  rowWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
 
   pill: {
     flexDirection: "row",
@@ -344,65 +319,21 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
   },
-  pillText: {
-    fontSize: 14,
-    fontWeight: "800",
-  },
+  pillText: { fontSize: 14, fontWeight: "800" },
 
-  itemRow: {
-    flexDirection: "row",
-    gap: 12,
-    padding: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  itemLeft: {
-    paddingTop: 2,
-  },
-  itemText: {
-    fontSize: 15,
-    lineHeight: 21,
-    fontWeight: "700",
-  },
+  itemRow: { flexDirection: "row", gap: 12, padding: 14, borderRadius: 14, borderWidth: 1 },
+  dot: { width: 10, height: 10, borderRadius: 999, marginTop: 6 },
+  itemText: { fontSize: 15, lineHeight: 21, fontWeight: "700" },
 
-  badge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: "800",
-  },
+  badge: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
+  badgeText: { fontSize: 12, fontWeight: "800" },
 
-  input: {
-    borderWidth: 1,
-    borderRadius: 14,
-    minHeight: 110,
-    padding: 12,
-    fontSize: 15,
-    fontWeight: "600",
-    textAlignVertical: "top",
-  },
+  countPill: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
+  countText: { fontSize: 12, fontWeight: "900" },
 
-  summaryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  summaryName: {
-    fontSize: 15,
-    fontWeight: "800",
-  },
-  counter: {
-    minWidth: 44,
-    height: 34,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 10,
-  },
+  input: { borderWidth: 1, borderRadius: 14, minHeight: 110, padding: 12, fontSize: 15, fontWeight: "600", textAlignVertical: "top" },
+
+  summaryRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  summaryName: { fontSize: 15, fontWeight: "800" },
+  counter: { minWidth: 44, height: 34, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
 });
