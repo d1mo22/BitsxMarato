@@ -12,10 +12,16 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.d1mo22.bitsxmarato",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMicrophoneUsageDescription": "Necesitamos acceso al micrófono para los juegos de voz.",
+        "NSSpeechRecognitionUsageDescription": "Necesitamos reconocimiento de voz para validar tus respuestas."
       }
     },
     "android": {
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

@@ -10,7 +10,21 @@ import {
   TouchableOpacity 
 } from 'react-native';
 import * as Speech from 'expo-speech';
-import Voice from 'react-native-voice'; // Se usa para el reconocimiento de voz
+import Voice, {
+  SpeechResultsEvent,
+  SpeechRecognizedEvent,
+  SpeechErrorEvent,
+} from '@react-native-voice/voice'; // Se usa para el reconocimiento de voz
+
+// Mock Voice to prevent crash in Expo Go / Web
+// const Voice = {
+//   onSpeechResults: null as any,
+//   onSpeechError: null as any,
+//   destroy: () => Promise.resolve(),
+//   removeAllListeners: () => {},
+//   start: (locale: any) => Promise.resolve(),
+//   stop: () => Promise.resolve(),
+// };
 
 // --- CONFIGURACIÓN DE LA PRUEBA ---
 const START_DIGITS = 4; // Empezamos en 4 dígitos
@@ -46,6 +60,7 @@ export default function AttentionScreen() {
   const [inputMethod, setInputMethod] = useState<InputMethod>('VOICE'); 
   const [isRecognizing, setIsRecognizing] = useState(false);
   const recognitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
 
   // --- LÓGICA DE RECONOCIMIENTO DE VOZ (REACT-NATIVE-VOICE) ---
 
@@ -209,8 +224,8 @@ export default function AttentionScreen() {
     };
 
     try {
-      await Speech.speak(`Nivel ${currentLevel}. Escucha atentamente la secuencia.`, options);
-      await Speech.speak(sequenceString, options);
+      //await Speech.speak(`Nivel ${currentLevel}. Escucha atentamente la secuencia.`, options);
+      //await Speech.speak(sequenceString, options);
       
       startListening(); 
 

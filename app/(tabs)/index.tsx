@@ -13,7 +13,7 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const [chartWidth, setChartWidth] = useState(0);
-  
+
   const theme = {
     background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
     text: isDark ? Colors.white : Colors.gray900,
@@ -38,7 +38,7 @@ export default function HomeScreen() {
   const getPath = (width: number) => {
     if (width === 0) return "";
     const s = width / 400;
-    return `M0 80 C ${50*s} 80, ${80*s} 40, ${130*s} 50 S ${200*s} 80, ${250*s} 60 S ${320*s} 20, ${400*s} 10`;
+    return `M0 80 C ${50 * s} 80, ${80 * s} 40, ${130 * s} 50 S ${200 * s} 80, ${250 * s} 60 S ${320 * s} 20, ${400 * s} 10`;
   };
 
   const getAreaPath = (width: number) => {
@@ -52,8 +52,8 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      <ScrollView 
-        style={globalStyles.scrollView} 
+      <ScrollView
+        style={globalStyles.scrollView}
         contentContainerStyle={globalStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -69,8 +69,8 @@ export default function HomeScreen() {
               <MaterialIcons name="notifications" size={24} color={theme.text} />
               <View style={globalStyles.badge} />
             </TouchableOpacity>
-            <Image 
-              source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk" }} 
+            <Image
+              source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk" }}
               style={globalStyles.avatar}
             />
           </View>
@@ -108,16 +108,16 @@ export default function HomeScreen() {
                       <Stop offset="100%" stopColor="#36e27b" stopOpacity="0" />
                     </LinearGradient>
                   </Defs>
-                  <Path 
-                    d={getPath(chartWidth)} 
-                    fill="none" 
-                    stroke="#36e27b" 
-                    strokeWidth="3" 
+                  <Path
+                    d={getPath(chartWidth)}
+                    fill="none"
+                    stroke="#36e27b"
+                    strokeWidth="3"
                     strokeLinecap="round"
                   />
-                  <Path 
-                    d={getAreaPath(chartWidth)} 
-                    fill="url(#chartGradient)" 
+                  <Path
+                    d={getAreaPath(chartWidth)}
+                    fill="url(#chartGradient)"
                     stroke="none"
                   />
                   <Circle cx={130 * s} cy="50" r="4" fill={theme.surface} stroke={Colors.primary} strokeWidth="2" />
@@ -162,7 +162,7 @@ export default function HomeScreen() {
             />
 
             {/* Card 2: Focus */}
-            <ActivityCard 
+            <ActivityCard
               theme={theme}
               isDark={isDark}
               title="Rompecabezas"
@@ -172,10 +172,11 @@ export default function HomeScreen() {
               imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuA9qO7-Gn85dh2fsh11RqxGm7EXuOxzncbRaelCMuuc77XUaHDThwzortnnBuNm26mzMYnse9fZ24mBYfk2a6nZAKHdeao_qTGtFeHudu-CRhNn3kfKsSXSGp6iW2MpVBY0-F6aHcUpVnxU-n7B_5wO-Eoox6p2Le7katb0TmLnAtcdka_MC0FUogEHPrpWc6NDsmeanGuhd7uWk3K4zVuCDACSXyErfQRW4rvOb-9yQTAEo_-QDRa6muxlI7zg42ak15lOQSZmFYM"
               bgColor="rgba(224, 231, 255, 1)" // indigo-100
               darkBgColor="rgba(49, 46, 129, 0.2)" // indigo-900/20
+              onPress={() => router.push('/challenges/test')}
             />
 
             {/* Card 2: Breathing */}
-            <ActivityCard 
+            <ActivityCard
               theme={theme}
               isDark={isDark}
               title="Respiración Guiada"
@@ -188,7 +189,7 @@ export default function HomeScreen() {
             />
 
             {/* Card 3: Memory */}
-            <ActivityCard 
+            <ActivityCard
               theme={theme}
               isDark={isDark}
               title="Asociación"
@@ -201,7 +202,7 @@ export default function HomeScreen() {
             />
 
             {/* Card 4: Reading */}
-            <ActivityCard 
+            <ActivityCard
               theme={theme}
               isDark={isDark}
               title="Lectura Calma"
@@ -221,7 +222,7 @@ export default function HomeScreen() {
 
 function ActivityCard({ theme, isDark, title, subtitle, icon, subIcon, imageUri, bgColor, darkBgColor, onPress }: any) {
   return (
-    <TouchableOpacity style={[globalStyles.activityCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+    <TouchableOpacity style={[globalStyles.activityCard, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={onPress}>
       <View style={globalStyles.activityContent}>
         <View style={[globalStyles.activityImageContainer, { backgroundColor: isDark ? darkBgColor : bgColor }]}>
           <Image source={{ uri: imageUri }} style={globalStyles.activityImage} />
