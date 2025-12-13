@@ -19,11 +19,12 @@ interface GameCardProps {
   imageUri: string;
   imageBgColor: string;
   imageDarkBgColor: string;
+  onPress?: () => void;
 }
 
-export default function GameCard({ theme, isDark, title, duration, description, category, categoryIcon, imageUri, imageBgColor, imageDarkBgColor }: GameCardProps) {
+export default function GameCard({ theme, isDark, title, duration, description, category, categoryIcon, imageUri, imageBgColor, imageDarkBgColor, onPress }: GameCardProps) {
   return (
-    <TouchableOpacity style={[styles.gameCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+    <View style={[styles.gameCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
       <View style={styles.gameCardContent}>
         {/* Image Area */}
         <View style={[styles.gameImageContainer, { backgroundColor: isDark ? imageDarkBgColor : imageBgColor }]}>
@@ -50,18 +51,18 @@ export default function GameCard({ theme, isDark, title, duration, description, 
             </View>
             
             <TouchableOpacity style={[
-              styles.playButton, 
-              { 
+              styles.playButton,
+              {
                 backgroundColor: isDark ? 'rgba(54, 226, 123, 0.1)' : 'rgba(54, 226, 123, 0.2)',
               }
-            ]}>
+            ]} onPress={onPress}>
               <MaterialIcons name="play-arrow" size={20} color={Colors.primary} />
               <Text style={[styles.playButtonText, { color: Colors.primary }]}>Jugar</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   gameTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     flex: 1,
     marginRight: 8,

@@ -1,12 +1,15 @@
 import { Colors } from '@/constants/colors';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { styles } from '@/styles/games';
+import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import GameCard from '../../components/game-card';
 
 export default function GamesScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   
@@ -21,38 +24,37 @@ export default function GamesScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
       {/* Top App Bar */}
-      <View style={[styles.header, { backgroundColor: isDark ? 'rgba(17, 33, 23, 0.9)' : 'rgba(246, 248, 247, 0.9)' }]}>
-        <TouchableOpacity style={[styles.iconButton, { backgroundColor: 'transparent' }]}>
+      <View style={[globalStyles.header, { backgroundColor: isDark ? 'rgba(17, 33, 23, 0.9)' : 'rgba(246, 248, 247, 0.9)' }]}>
+        <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
           <MaterialIcons name="arrow-back" size={28} color={theme.icon} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Gimnasio Cerebral</Text>
-        <TouchableOpacity style={[styles.iconButton, { backgroundColor: 'transparent' }]}>
+        <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
           <MaterialIcons name="settings" size={28} color={theme.icon} />
         </TouchableOpacity>
       </View>
 
       <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={styles.scrollContent}
+        style={globalStyles.scrollView} 
+        contentContainerStyle={globalStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Greeting & Context */}
-        <View style={styles.greetingSection}>
-          <Text style={[styles.greetingTitle, { color: theme.text }]}>
+        <View style={[globalStyles.titleContainer, { marginTop: 16 }]}>
+          <Text style={[globalStyles.title, { color: theme.text }]}>
             Hola, Ana. {'\n'}
-            <Text style={[styles.greetingSubtitle, { color: theme.textSecondary }]}>
+            <Text style={[globalStyles.subtitle, { color: theme.textSecondary }]}>
               Tómate un momento para ti.
             </Text>
           </Text>
         </View>
 
         {/* Daily Progress */}
-        <View style={styles.progressSection}>
-          <View style={[styles.progressCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <View style={globalStyles.section}>
+          <View style={[globalStyles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <View style={styles.progressHeader}>
               <View>
                 <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>META DIARIA</Text>
@@ -71,66 +73,40 @@ export default function GamesScreen() {
         </View>
 
         {/* Games List */}
-        <View style={styles.gamesSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: isDark ? Colors.white : Colors.gray800 }]}>Recomendados para hoy</Text>
+        <View style={globalStyles.section}>
+          <View style={globalStyles.sectionHeader}>
+            <Text style={[globalStyles.sectionTitle, { color: isDark ? Colors.white : Colors.gray800 }]}>Recomendados para hoy</Text>
           </View>
 
-          <View style={styles.gamesList}>
-            {/* Card 1: La Despensa */}
+          <View style={globalStyles.cardsContainer}>
+            {/* Card 5: Fluencia Verbal */}
             <GameCard 
               theme={theme}
               isDark={isDark}
-              title="La Despensa"
-              duration="~1 min"
-              description="Memoriza objetos cotidianos en un ambiente tranquilo."
-              category="Memoria"
-              categoryIcon="psychology"
-              imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuCxBo_GbOjbdaBilc7v24VS8ceX82zZMyDis0LEmB4DXTK-5lHjBwG-xUV4I9PGiWG57aBbNeUb9Iuvnz7uOKc0dkG-3ls32jzJ6_H8yCkGsK1ajPnjsWiiB7Qvrzd_bQVZo0uwKuXQfP7rYwFxBLbROTnYM7xPsAgUKV-pysjM2q7jCCliiTy36EXtRjpm4CTrrPkczkUEDyavUTCRBX5d3WffpsRDP1cw5rO5-OT6uPkvv4O7pHDqaoTm2UQ-pG1vtSgzlk9-RY4"
-              imageBgColor="#e8f5e9"
-              imageDarkBgColor="#25382e"
-            />
-
-            {/* Card 2: El Semáforo Inverso */}
-            <GameCard 
-              theme={theme}
-              isDark={isDark}
-              title="El Semáforo Inverso"
+              title="Fluencia Verbal"
               duration="~2 min"
-              description="Control de impulsos suave. Detente en verde, avanza en rojo."
-              category="Control"
-              categoryIcon="touch-app"
-              imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuDrJ703BKFl2B6fvK-XYrcpMQU8wj3Gf_3DwsBpHcBTOCzK3bk2xppi9S3W38G9ejoCwl5TBeZJa_-4abxaTM_ZYmjM9wxH08GuzBiNfpIXsIUFt48-19Yhnz3FsaoOYcXnkTFW4fq9c-FttXtYgKIiYtJdC7_BnXkE18E44B-xyn58h9nBOem-3Fccw2OzphU5ROkuCdu8gyVwzySZTKTEn1Upx06sI0y9aNqfotJQ3WynNZzGSbDGDA56dsV3crEQwCQ6K3aOzes"
-              imageBgColor="#fff3e0"
-              imageDarkBgColor="#3d342b"
+              description="Reto de agilidad mental alternando palabras."
+              category="Lenguaje"
+              categoryIcon="record-voice-over"
+              imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuC-UpuOzWTkW1C_I6I3xCbOVtiM20W-7rDITIGc_xopOCBCHlxI-Vzgpv3UE44BD_d5fM-uHsDbI499SK_48sFUqChytwK-is9jdjFUPwPlqksEMXmeaCXRhYDEIl8Nxl_ymwsxAUim5ZhakxluCoNLsoBmSXXr9qkSbrUe637X6PL2i4Cvzmsm324mZGYVx3ju4PQvbXWPskfffuTZAwqZQZNtiDyTYcyMfU0ywBa-LCTKHK9nOrF0B5oj0CRVr9mYiDxn0YlTAe0"
+              imageBgColor="#e0f7fa"
+              imageDarkBgColor="#1a332a"
+              onPress={() => router.push('/games/verbal-fluency')}
             />
 
-            {/* Card 3: Cazador de Patrones */}
+            {/* Card 6: Atención */}
             <GameCard 
               theme={theme}
               isDark={isDark}
-              title="Cazador de Patrones"
+              title="Atención"
               duration="~3 min"
-              description="Encuentra la armonía visual conectando formas similares."
-              category="Atención"
-              categoryIcon="visibility"
-              imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuCfs65YP2SWyCnq5w7MITUCMpdqgBQ2tAHSYBtUju02IVjy6LjXnyqGi2G9biQqnGXbEpL7YOKU_GglUVNYWrnkbnBKhEhGz31JfjDP5lNCAj3je7fBQmnNKmesmVx-dh9_ZbgU5BJOU983xUsFYEGGRe33_JNQNgzo0E113TQlu4xAYLnz6NK4tE2uiHGHTqbYg_3iwLKuv-5P546aSaNll5H8DO5no3_gzRV0bg8cepEPVdwGpUQ-0Gbjzd9Jppstu7dMPPDy4bQ"
-              imageBgColor="#e1f5fe"
-              imageDarkBgColor="#203642"
-            />
-
-            {/* Card 4: N-Back del Bosque */}
-            <GameCard 
-              theme={theme}
-              isDark={isDark}
-              title="N-Back del Bosque"
-              duration="~2 min"
-              description="Ejercita tu memoria de trabajo recordando sonidos del bosque."
-              category="Auditivo"
-              categoryIcon="headphones"
-              imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuBATzLEr38rOMDg1Ov4zobG6rITV3iProntxhNlugP17tilH-nQWYCzasg5QdgMPDlGNERfurCA_fz6uHwKak3qdTa1m1p5SBpPyHfZfNaVK0jebnecp7v6qQyPp068udxykn4dwGXwLy9Pvl0Qm21776n6q-RrADBcUrlahzP2dxK2yr0Opmm3AqPJE3JRwFnZRZvsndgu2ts19T6OAz59IKFLIOaiG0koOHHL9knICsmDVf-w_xVLaxhUdx5A8xpaH9FF7BTmSJ8"
-              imageBgColor="#f3e5f5"
-              imageDarkBgColor="#362738"
+              description="Memoriza y repite secuencias numéricas."
+              category="Memoria"
+              categoryIcon="memory"
+              imageUri="https://lh3.googleusercontent.com/aida-public/AB6AXuAdwfMIPjZHGc3o76kgnV3KE8f8zTEmy2V-2_Myu_RYpFFCgHH0qquUkXyJsbab5kAzb4S7LExbYAn488ZRyiyQUMWTffWWnaHUMA3AtDZBnqnlTw-gr-u-NCxl30Zs7I-wP3-Ii_GEG1T_O-pj87EwuR0HBh8S9zlS8ftc90E9Aaq9rwFynXAy28e_R_3qNGrFCHZHtVXx3AArU-nyJ8QXkoi5YBaIuGqV9SExIvx0LBnoNJoJ-iGON6-6T0bdj7jZpkKdx2tLtT4"
+              imageBgColor="#eef4ff"
+              imageDarkBgColor="#1e2433"
+              onPress={() => router.push('/games/atention')}
             />
           </View>
         </View>
@@ -138,6 +114,47 @@ export default function GamesScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  progressLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  progressValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  streakContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  streakText: {
+    color: Colors.primary,
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  progressBarContainer: {
+    height: 12,
+    width: '100%',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: 6,
+  },
+});
 
 
 
