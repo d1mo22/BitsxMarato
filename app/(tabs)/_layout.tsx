@@ -93,7 +93,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Inicio' }} />
       <Tabs.Screen name="games" options={{ title: 'Juegos' }} />
-      <Tabs.Screen name="form" options={{ title: 'Form' }} />
+      <Tabs.Screen name="form" options={{ title: 'Formulario' }} />
       <Tabs.Screen name="wellness" options={{ title: 'Bienestar' }} />
     </Tabs>
   );

@@ -252,7 +252,7 @@ export default function HomeScreen() {
 
               <View style={{ marginTop: 2 }}>
                 <Text style={{ color: theme.textSecondary, fontSize: 12, fontWeight: "800", marginBottom: 6 }}>
-                  Resum d’avui:
+                  Resumen de hoy:
                 </Text>
 
                 {affected.map((d) => (
