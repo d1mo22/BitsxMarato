@@ -3,7 +3,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import * as Speech from 'expo-speech';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
@@ -16,8 +16,8 @@ export default function AttentionGame() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
 
-  const [level, setLevel] = useState(4); 
-  const [trial, setTrial] = useState(1); 
+  const [level, setLevel] = useState(4);
+  const [trial, setTrial] = useState(1);
   const [failures, setFailures] = useState(0);
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSequence, setUserSequence] = useState<number[]>([]);
@@ -31,27 +31,27 @@ export default function AttentionGame() {
   const digitOpacity = useSharedValue(0);
   const feedbackScale = useSharedValue(0);
   const feedbackOpacity = useSharedValue(0);
+  const isMounted = useRef(true);
 
   useEffect(() => {
+    isMounted.current = true;
     startRound(4);
-  }, []);
-
-  useEffect(() => {
     return () => {
+      isMounted.current = false;
       try {
         Speech.stop();
-      } catch (e) {}
+      } catch (e) { }
     };
   }, []);
 
   // Función para guardar fecha
   const markGameAsPlayed = async () => {
-      try {
-          const today = new Date().toISOString().split('T')[0];
-          await AsyncStorage.setItem(GAME_ID, today);
-      } catch (e) {
-          console.error("Error saving game date", e);
-      }
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await AsyncStorage.setItem(GAME_ID, today);
+    } catch (e) {
+      console.error("Error saving game date", e);
+    }
   };
 
   const startRound = (currentLevel = level) => {
@@ -64,7 +64,10 @@ export default function AttentionGame() {
 
   const playSequence = async (seq: number[]) => {
     for (let i = 0; i < seq.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 500)); 
+      if (!isMounted.current) return;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!isMounted.current) return;
+
       setCurrentDigit(seq[i]);
 
       digitScale.value = withSequence(withTiming(1.2, { duration: 200 }), withTiming(1, { duration: 200 }));
@@ -72,17 +75,18 @@ export default function AttentionGame() {
 
       try {
         Speech.speak(String(seq[i]), {
-          language: 'es-US',
+          language: 'es-ES',
         });
-      } catch (e) {}
+      } catch (e) { }
 
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!isMounted.current) return;
 
       digitOpacity.value = withTiming(0, { duration: 200 });
-      await new Promise(resolve => setTimeout(resolve, 200)); 
+      await new Promise(resolve => setTimeout(resolve, 200));
       setCurrentDigit(null);
     }
-    setPhase('input');
+    if (isMounted.current) setPhase('input');
   };
 
   const handleInput = (num: number) => {
@@ -167,7 +171,10 @@ export default function AttentionGame() {
       <View style={globalStyles.header}>
         <TouchableOpacity
           style={[globalStyles.iconButton, { backgroundColor: theme.surface }]}
-          onPress={() => router.back()}
+          onPress={() => {
+            try { Speech.stop(); } catch (e) { }
+            router.back();
+          }}
         >
           <MaterialIcons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
