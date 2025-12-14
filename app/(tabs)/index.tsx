@@ -3,16 +3,8 @@ import { useTheme } from "@/hooks/use-theme";
 import { globalStyles } from "@/styles/global";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
-import {
-  Image,
-  LayoutChangeEvent,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useCallback, useMemo } from "react";
+import { Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useFormStore, Domain } from "@/app/stores/formStore";
@@ -41,10 +33,7 @@ function recommendationsFor(domain: Domain) {
         "Si tens una estona, llegeix un text curt (una notícia, un paràgraf d’un llibre) i intenta comprendre’l detenidament. Pots subratllar mentalment les idees importants per mantenir-te concentrat.",
       ];
     case "velocitat":
-      return [
-        "Redueix multitarea: 1 cosa cada cop.",
-        "Comença per una tasca fàcil per agafar ritme.",
-      ];
+      return ["Redueix multitarea: 1 cosa cada cop.", "Comença per una tasca fàcil per agafar ritme."];
     case "fluencia":
       return [
         "Avui és un bon dia per fer algo d'esport, potser anar a caminar una estona o alguna altra activitat que et vingui de gust",
@@ -69,10 +58,10 @@ function recommendationsFor(domain: Domain) {
 export default function HomeScreen() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
-  const [chartWidth, setChartWidth] = useState(0);
 
   const { ready, today, refresh, getAffectedDomainsForDay } = useFormStore();
 
+  // ✅ Opción A: al volver a Home, recargar AsyncStorage
   useFocusEffect(
     useCallback(() => {
       refresh();
@@ -84,15 +73,10 @@ export default function HomeScreen() {
     return getAffectedDomainsForDay(today);
   }, [ready, getAffectedDomainsForDay, today]);
 
-  const onLayoutChart = (event: LayoutChangeEvent) => {
-    const { width } = event.nativeEvent.layout;
-    if (width !== chartWidth) requestAnimationFrame(() => setChartWidth(width));
-  };
-
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-  
+
       {/* Header */}
       <View
         style={[
@@ -105,40 +89,38 @@ export default function HomeScreen() {
             <MaterialIcons name="menu" size={24} color={theme.icon} />
           </TouchableOpacity>
         </View>
-  
+
         <View style={globalStyles.headerRight}>
           <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: "transparent" }]}>
             <MaterialIcons name="notifications" size={24} color={theme.icon} />
             <View style={globalStyles.badge} />
           </TouchableOpacity>
-  
+
           <Image
-            source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk" }}
+            source={{
+              uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk",
+            }}
             style={globalStyles.avatar}
           />
         </View>
       </View>
-  
-      {/* ✅ ScrollView directamente, con flex:1 */}
+
+      {/* ✅ Un solo ScrollView (móvil friendly) */}
       <ScrollView
         style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 16,
-          paddingBottom: 24,
-          gap: 10,
+          paddingBottom: 28,
         }}
-        showsVerticalScrollIndicator={false}
       >
-        <View style={[globalStyles.titleContainer, { marginTop: 6 }]}>
+        {/* Greeting */}
+        <View style={[globalStyles.titleContainer, { marginTop: 6, marginBottom: 14 }]}>
           <Text style={[globalStyles.title, { color: theme.text }]}>Hola, Ana.</Text>
-          <Text style={[globalStyles.subtitle, { color: theme.textSecondary }]}>
-            ¿Cómo te sientes hoy?
-          </Text>
+          <Text style={[globalStyles.subtitle, { color: theme.textSecondary }]}>¿Cómo te sientes hoy?</Text>
         </View>
-  
-        <View onLayout={onLayoutChart} />
-  
+
         {/* Formulario */}
         <TouchableOpacity
           activeOpacity={0.9}
@@ -149,8 +131,7 @@ export default function HomeScreen() {
             padding: 16,
             flexDirection: "row",
             alignItems: "center",
-            gap: 12,
-            marginTop: 8,
+            marginBottom: 10,
           }}
         >
           <View
@@ -161,21 +142,22 @@ export default function HomeScreen() {
               backgroundColor: "rgba(255,255,255,0.18)",
               alignItems: "center",
               justifyContent: "center",
+              marginRight: 12,
             }}
           >
             <MaterialIcons name="assignment" size={24} color="#fff" />
           </View>
-  
+
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>Formulario</Text>
             <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: "700", marginTop: 2 }}>
               Què t’ha passat ara?
             </Text>
           </View>
-  
+
           <MaterialIcons name="chevron-right" size={28} color="#fff" />
         </TouchableOpacity>
-  
+
         {/* Juegos */}
         <TouchableOpacity
           activeOpacity={0.9}
@@ -186,7 +168,7 @@ export default function HomeScreen() {
             padding: 16,
             flexDirection: "row",
             alignItems: "center",
-            gap: 12,
+            marginBottom: 10,
           }}
         >
           <View
@@ -197,21 +179,22 @@ export default function HomeScreen() {
               backgroundColor: "rgba(255,255,255,0.18)",
               alignItems: "center",
               justifyContent: "center",
+              marginRight: 12,
             }}
           >
             <MaterialIcons name="sports-esports" size={24} color="#fff" />
           </View>
-  
+
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>Juegos</Text>
             <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: "700", marginTop: 2 }}>
               Recorda fer els tests
             </Text>
           </View>
-  
+
           <MaterialIcons name="chevron-right" size={28} color="#fff" />
         </TouchableOpacity>
-  
+
         {/* Recomendaciones */}
         <View
           style={{
@@ -220,13 +203,90 @@ export default function HomeScreen() {
             backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
             borderWidth: 1,
             borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)",
-            gap: 10,
           }}
         >
-          {/* ...tu bloque tal cual... */}
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: isDark ? "rgba(54,226,123,0.14)" : "rgba(54,226,123,0.16)",
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 10,
+              }}
+            >
+              <MaterialIcons name="tips-and-updates" size={24} color={Colors.primary} />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: theme.text, fontWeight: "900", fontSize: 16 }}>Recomendaciones</Text>
+              <Text style={{ color: theme.textSecondary, fontWeight: "700", marginTop: 2 }}>
+                Basades en el que has marcat avui ({today})
+              </Text>
+            </View>
+          </View>
+
+          {!ready ? (
+            <Text style={stylesRec.textSmall(theme)}>Carregant…</Text>
+          ) : affected.length === 0 ? (
+            <Text style={stylesRec.textSmall(theme)}>
+              Encara no has marcat cap episodi avui. Ves al formulari i toca el que t’hagi passat.
+            </Text>
+          ) : (
+            <View>
+              {affected.map((d) => (
+                <View key={d} style={{ marginBottom: 14 }}>
+                  <Text style={{ color: theme.text, fontWeight: "900", marginBottom: 6 }}>
+                    {domainLabel(d)}{" "}
+                    <Text style={{ color: theme.textSecondary, fontWeight: "800" }}>
+                      ({counts?.[d] ?? 0})
+                    </Text>
+                  </Text>
+
+                  {recommendationsFor(d).map((r, i) => (
+                    <Text key={`${d}-${i}`} style={stylesRec.bullet(theme)}>
+                      • {r}
+                    </Text>
+                  ))}
+                </View>
+              ))}
+
+              <View style={{ marginTop: 2 }}>
+                <Text style={{ color: theme.textSecondary, fontSize: 12, fontWeight: "800", marginBottom: 6 }}>
+                  Resum d’avui:
+                </Text>
+
+                {affected.map((d) => (
+                  <Text
+                    key={`sum-${d}`}
+                    style={{ color: theme.textSecondary, fontSize: 12, fontWeight: "700", marginBottom: 3 }}
+                  >
+                    • {domainLabel(d)}: {counts?.[d] ?? 0}
+                  </Text>
+                ))}
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
-  
 }
+
+const stylesRec = {
+  bullet: (theme: any) => ({
+    color: theme.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600" as const,
+    marginBottom: 6,
+  }),
+  textSmall: (theme: any) => ({
+    color: theme.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600" as const,
+  }),
+};
