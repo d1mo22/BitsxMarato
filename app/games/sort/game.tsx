@@ -1,19 +1,32 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, useColorScheme, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, useColorScheme, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar
+
 import { Colors } from '@/constants/colors';
 
-const { width } = Dimensions.get('window');
+// ... (tus constantes GRID_SIZE, TOTAL_NUMBERS, etc. siguen igual)
 const GRID_SIZE = 3;
 const TOTAL_NUMBERS = 12;
-const BUBBLE_SIZE = (width - 48 - (16 * (GRID_SIZE - 1))) / GRID_SIZE; // 48 padding, 16 gap
+const MAX_CONTENT_WIDTH = 400; 
+const GAP = 16;
+const PADDING = 24;
+const GAME_ID = 'SORT_GAME_LAST_PLAYED'; // Mismo ID que en index
 
 export default function SortGameScreen() {
+    // ... (tus hooks y estados siguen igual)
     const router = useRouter();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
+    const { width } = useWindowDimensions();
+
+    const bubbleSize = useMemo(() => {
+        const effectiveWidth = Math.min(width, MAX_CONTENT_WIDTH);
+        const availableSpace = effectiveWidth - (PADDING * 2) - (GAP * (GRID_SIZE - 1));
+        return availableSpace / GRID_SIZE;
+    }, [width]);
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [startTime, setStartTime] = useState<number | null>(null);
@@ -21,7 +34,7 @@ export default function SortGameScreen() {
     const [isPaused, setIsPaused] = useState(false);
     const [wrongNumber, setWrongNumber] = useState<number | null>(null);
 
-    // Generate random numbers and their sorted version
+    // ... (tu lógica de generate numbers sigue igual)
     const { numbers, sortedNumbers } = useMemo(() => {
         const set = new Set<number>();
         while (set.size < TOTAL_NUMBERS) {
@@ -29,8 +42,6 @@ export default function SortGameScreen() {
         }
         const nums = Array.from(set);
         const sorted = [...nums].sort((a, b) => a - b);
-
-        // Shuffle for display
         const shuffled = [...nums];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -54,12 +65,22 @@ export default function SortGameScreen() {
         }
     }, [startTime, isPaused]);
 
-    const handlePress = (number: number) => {
+    // MODIFICAMOS handlePress PARA QUE SEA ASYNC Y GUARDE LA FECHA
+    const handlePress = async (number: number) => {
         if (isPaused) return;
 
         if (number === currentNumber) {
             if (currentIndex === TOTAL_NUMBERS - 1) {
-                // Game Over
+                // JUEGO TERMINADO
+                try {
+                    // Guardamos la fecha de hoy
+                    const today = new Date().toISOString().split('T')[0];
+                    await AsyncStorage.setItem(GAME_ID, today);
+                } catch (e) {
+                    console.error("Error saving game completion", e);
+                }
+
+                // Navegar a resultados
                 router.push({
                     pathname: '/games/sort/result',
                     params: { time: elapsedTime }
@@ -68,7 +89,6 @@ export default function SortGameScreen() {
                 setCurrentIndex(prev => prev + 1);
             }
         } else if (number > currentNumber) {
-            // Wrong number feedback
             setWrongNumber(number);
             setTimeout(() => setWrongNumber(null), 500);
         }
@@ -80,12 +100,12 @@ export default function SortGameScreen() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    // ... (El resto del renderizado es idéntico a tu versión anterior)
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#111921' : '#f6f7f8' }]}>
             <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
-            {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { maxWidth: MAX_CONTENT_WIDTH, width: '100%', alignSelf: 'center' }]}>
                 <TouchableOpacity
                     onPress={() => setIsPaused(!isPaused)}
                     style={[styles.iconButton, { backgroundColor: isDark ? '#1a232e' : '#fff' }]}
@@ -102,7 +122,6 @@ export default function SortGameScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* Instructions */}
             <View style={styles.instructionContainer}>
                 <View style={[styles.instructionBox, { backgroundColor: isDark ? 'rgba(26, 35, 46, 0.5)' : 'rgba(255, 255, 255, 0.5)' }]}>
                     <Text style={[styles.instructionText, { color: isDark ? '#94a3b8' : '#64748b' }]}>
@@ -111,13 +130,11 @@ export default function SortGameScreen() {
                 </View>
             </View>
 
-            {/* Grid */}
             <View style={styles.gridContainer}>
-                <View style={styles.grid}>
+                <View style={[styles.grid, { maxWidth: MAX_CONTENT_WIDTH }]}>
                     {numbers.map((num) => {
                         const isCompleted = num < currentNumber;
                         const isWrong = num === wrongNumber;
-                        // const isNext = num === currentNumber; // Removed hint
 
                         return (
                             <TouchableOpacity
@@ -127,8 +144,8 @@ export default function SortGameScreen() {
                                 style={[
                                     styles.bubble,
                                     {
-                                        width: BUBBLE_SIZE,
-                                        height: BUBBLE_SIZE,
+                                        width: bubbleSize,
+                                        height: bubbleSize,
                                         backgroundColor: isCompleted
                                             ? (isDark ? 'rgba(20, 83, 45, 0.1)' : 'rgba(232, 245, 233, 0.5)')
                                             : isWrong
@@ -168,25 +185,26 @@ export default function SortGameScreen() {
                 </View>
             </View>
 
-            {/* Footer Progress */}
-            <View style={[styles.footer, { backgroundColor: isDark ? '#1a232e' : '#fff' }]}>
-                <View style={styles.progressInfo}>
-                    <Text style={[styles.progressTitle, { color: isDark ? '#fff' : '#0f172a' }]}>Progreso</Text>
-                    <Text style={[styles.progressSubtitle, { color: isDark ? '#94a3b8' : '#64748b' }]}>
-                        {currentIndex} de {TOTAL_NUMBERS} completado
-                    </Text>
-                </View>
-                <View style={[styles.progressBarBg, { backgroundColor: isDark ? '#1e293b' : '#f1f5f9' }]}>
-                    <View
-                        style={[
-                            styles.progressBarFill,
-                            { width: `${(currentIndex / TOTAL_NUMBERS) * 100}%`, backgroundColor: Colors.primary }
-                        ]}
-                    />
-                </View>
-                <View style={styles.levelInfo}>
-                    <Text style={styles.levelText}>Nivel 1</Text>
-                    <Text style={styles.levelText}>Siguiente: Nivel 2</Text>
+            <View style={{ width: '100%', alignItems: 'center', backgroundColor: isDark ? '#1a232e' : '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
+                <View style={[styles.footer, { backgroundColor: 'transparent', width: '100%', maxWidth: MAX_CONTENT_WIDTH, shadowColor: 'transparent', elevation: 0 }]}>
+                    <View style={styles.progressInfo}>
+                        <Text style={[styles.progressTitle, { color: isDark ? '#fff' : '#0f172a' }]}>Progreso</Text>
+                        <Text style={[styles.progressSubtitle, { color: isDark ? '#94a3b8' : '#64748b' }]}>
+                            {currentIndex} de {TOTAL_NUMBERS} completado
+                        </Text>
+                    </View>
+                    <View style={[styles.progressBarBg, { backgroundColor: isDark ? '#1e293b' : '#f1f5f9' }]}>
+                        <View
+                            style={[
+                                styles.progressBarFill,
+                                { width: `${(currentIndex / TOTAL_NUMBERS) * 100}%`, backgroundColor: Colors.primary }
+                            ]}
+                        />
+                    </View>
+                    <View style={styles.levelInfo}>
+                        <Text style={styles.levelText}>Nivel 1</Text>
+                        <Text style={styles.levelText}>Siguiente: Nivel 2</Text>
+                    </View>
                 </View>
             </View>
 
@@ -231,6 +249,7 @@ const styles = StyleSheet.create({
     instructionContainer: {
         paddingHorizontal: 24,
         paddingVertical: 8,
+        alignItems: 'center',
     },
     instructionBox: {
         padding: 8,
@@ -246,13 +265,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 16,
+        width: '100%',
     },
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 16,
+        gap: GAP,
         justifyContent: 'center',
-        maxWidth: 360,
+        width: '100%',
     },
     bubble: {
         borderRadius: 999,
@@ -271,13 +291,6 @@ const styles = StyleSheet.create({
     },
     footer: {
         padding: 24,
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.03,
-        shadowRadius: 20,
-        elevation: 10,
     },
     progressInfo: {
         flexDirection: 'row',

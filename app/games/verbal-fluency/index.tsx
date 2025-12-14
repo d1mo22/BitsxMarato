@@ -2,14 +2,35 @@ import { Colors } from '@/constants/colors';
 import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useRouter, useFocusEffect } from 'expo-router'; // Importar useFocusEffect
+import React, { useState, useCallback } from 'react'; // Importar useState y useCallback
 import { Image, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
+
+const GAME_ID = 'VERBAL_FLUENCY_LAST_PLAYED'; // ID Único para este juego
 
 export default function VerbalFluencyIntro() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
+  const [isLocked, setIsLocked] = useState(false); // Estado de bloqueo
+
+  // Verificar disponibilidad cada vez que la pantalla obtiene el foco
+  useFocusEffect(
+    useCallback(() => {
+      checkAvailability();
+    }, [])
+  );
+
+  const checkAvailability = async () => {
+    try {
+      const lastPlayedDate = await AsyncStorage.getItem(GAME_ID);
+      const today = new Date().toISOString().split('T')[0];
+      setIsLocked(lastPlayedDate === today);
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
@@ -34,67 +55,92 @@ export default function VerbalFluencyIntro() {
       >
         {/* Hero Illustration */}
         <View style={styles.heroContainer}>
-          <View style={[styles.heroCircle, { backgroundColor: isDark ? '#1a332a' : '#e0f7fa', borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)' }]}>
-            <Image
-              source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuC-UpuOzWTkW1C_I6I3xCbOVtiM20W-7rDITIGc_xopOCBCHlxI-Vzgpv3UE44BD_d5fM-uHsDbI499SK_48sFUqChytwK-is9jdjFUPwPlqksEMXmeaCXRhYDEIl8Nxl_ymwsxAUim5ZhakxluCoNLsoBmSXXr9qkSbrUe637X6PL2i4Cvzmsm324mZGYVx3ju4PQvbXWPskfffuTZAwqZQZNtiDyTYcyMfU0ywBa-LCTKHK9nOrF0B5oj0CRVr9mYiDxn0YlTAe0" }}
-              style={styles.heroImage}
-              resizeMode="contain"
-            />
+          <View style={[
+            styles.heroCircle, 
+            { 
+              backgroundColor: isLocked ? (isDark ? '#334155' : '#e2e8f0') : (isDark ? '#1a332a' : '#e0f7fa'), 
+              borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)' 
+            }
+          ]}>
+            {isLocked ? (
+              <MaterialIcons name="lock" size={80} color={isDark ? '#94a3b8' : '#64748b'} />
+            ) : (
+              <Image
+                source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuC-UpuOzWTkW1C_I6I3xCbOVtiM20W-7rDITIGc_xopOCBCHlxI-Vzgpv3UE44BD_d5fM-uHsDbI499SK_48sFUqChytwK-is9jdjFUPwPlqksEMXmeaCXRhYDEIl8Nxl_ymwsxAUim5ZhakxluCoNLsoBmSXXr9qkSbrUe637X6PL2i4Cvzmsm324mZGYVx3ju4PQvbXWPskfffuTZAwqZQZNtiDyTYcyMfU0ywBa-LCTKHK9nOrF0B5oj0CRVr9mYiDxn0YlTAe0" }}
+                style={styles.heroImage}
+                resizeMode="contain"
+              />
+            )}
           </View>
         </View>
 
         {/* Headline */}
         <View style={styles.headlineContainer}>
           <Text style={[globalStyles.title, { color: theme.text, textAlign: 'center', fontSize: 32 }]}>
-            Cambio de Palabras
+            {isLocked ? 'Sesión Completada' : 'Cambio de Palabras'}
           </Text>
-          <View style={styles.divider} />
+          <View style={[styles.divider, isLocked && { backgroundColor: '#94a3b8' }]} />
         </View>
 
         {/* Instructions Card */}
         <View style={[globalStyles.card, { backgroundColor: theme.surface, borderColor: theme.border, padding: 24 }]}>
           <View style={styles.instructionHeader}>
-            <View style={styles.iconBadge}>
-              <MaterialIcons name="psychology" size={24} color={Colors.primary} />
+            <View style={[styles.iconBadge, isLocked && { backgroundColor: isDark ? '#334155' : '#e2e8f0' }]}>
+              <MaterialIcons name={isLocked ? "check-circle" : "psychology"} size={24} color={isLocked ? (isDark ? '#94a3b8' : '#64748b') : Colors.primary} />
             </View>
-            <Text style={[styles.instructionTitle, { color: theme.text }]}>Instrucciones</Text>
+            <Text style={[styles.instructionTitle, { color: theme.text }]}>
+              {isLocked ? 'Estado' : 'Instrucciones'}
+            </Text>
           </View>
 
-          <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
-            Reto Alterno: Di una palabra que empiece con <Text style={{ color: Colors.primary, fontWeight: 'bold' }}>P</Text>, luego un nombre de Animal.
-          </Text>
-          <Text style={[styles.instructionText, { color: theme.textSecondary, marginTop: 12 }]}>
-            ¡Sigue alternando lo más rápido que puedas!
-          </Text>
+          {isLocked ? (
+             <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
+               Ya has realizado tu entrenamiento de fluencia verbal por hoy. ¡Vuelve mañana para seguir practicando!
+             </Text>
+          ) : (
+            <>
+              <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
+                Reto Alterno: Di una palabra que empiece con <Text style={{ color: Colors.primary, fontWeight: 'bold' }}>P</Text>, luego un nombre de Animal.
+              </Text>
+              <Text style={[styles.instructionText, { color: theme.textSecondary, marginTop: 12 }]}>
+                ¡Sigue alternando lo más rápido que puedas!
+              </Text>
+            </>
+          )}
         </View>
 
-        {/* Example Visual */}
-        <View style={[styles.exampleContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(54, 226, 123, 0.05)', borderColor: theme.border }]}>
-          <Text style={[styles.exampleLabel, { color: isDark ? '#8baaa0' : '#648775' }]}>EJEMPLO VISUAL</Text>
-          <View style={styles.exampleFlow}>
-            <View style={[styles.exampleTag, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.exampleTagText, { color: theme.text }]}>Pera</Text>
-            </View>
-            <MaterialIcons name="arrow-forward" size={16} color={Colors.primary} />
-            <View style={[styles.exampleTag, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.exampleTagText, { color: theme.text }]}>Perro</Text>
-            </View>
-            <MaterialIcons name="arrow-forward" size={16} color={Colors.primary} />
-            <View style={[styles.exampleTag, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.exampleTagText, { color: theme.text }]}>Papel</Text>
+        {/* Example Visual (Solo visible si no está bloqueado para limpiar la UI) */}
+        {!isLocked && (
+          <View style={[styles.exampleContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(54, 226, 123, 0.05)', borderColor: theme.border }]}>
+            <Text style={[styles.exampleLabel, { color: isDark ? '#8baaa0' : '#648775' }]}>EJEMPLO VISUAL</Text>
+            <View style={styles.exampleFlow}>
+              <View style={[styles.exampleTag, { backgroundColor: theme.surface }]}>
+                <Text style={[styles.exampleTagText, { color: theme.text }]}>Pera</Text>
+              </View>
+              <MaterialIcons name="arrow-forward" size={16} color={Colors.primary} />
+              <View style={[styles.exampleTag, { backgroundColor: theme.surface }]}>
+                <Text style={[styles.exampleTagText, { color: theme.text }]}>Perro</Text>
+              </View>
+              <MaterialIcons name="arrow-forward" size={16} color={Colors.primary} />
+              <View style={[styles.exampleTag, { backgroundColor: theme.surface }]}>
+                <Text style={[styles.exampleTagText, { color: theme.text }]}>Papel</Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </ScrollView>
 
       {/* Bottom Action */}
       <View style={[styles.footer, { backgroundColor: theme.background, borderTopColor: theme.border }]}>
         <TouchableOpacity
-          style={styles.startButton}
+          style={[styles.startButton, isLocked && { backgroundColor: isDark ? '#334155' : '#cbd5e1', shadowOpacity: 0 }]}
           onPress={() => router.push('/games/verbal-fluency/game')}
+          disabled={isLocked}
         >
-          <Text style={styles.startButtonText}>Empezar</Text>
-          <MaterialIcons name="play-circle" size={24} color="#022c22" />
+          <Text style={[styles.startButtonText, isLocked && { color: '#fff' }]}>
+            {isLocked ? 'Completado por hoy' : 'Empezar'}
+          </Text>
+          <MaterialIcons name={isLocked ? "lock" : "play-circle"} size={24} color={isLocked ? "#fff" : "#022c22"} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>

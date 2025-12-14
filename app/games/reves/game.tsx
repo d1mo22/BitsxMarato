@@ -8,24 +8,29 @@ import * as Speech from 'expo-speech';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const GAME_ID = 'REVERSE_GAME_LAST_PLAYED';
 
 export default function ReverseSortGame() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
 
-  // --- CONFIGURACIÓN DEL JUEGO ---
-  const START_LEVEL = 2; // Longitud inicial
-  const MAX_LEVEL = 8;   // Longitud máxima
+  // --- CONFIGURACIÓN ---
+  const START_LEVEL = 2; 
+  const MAX_LEVEL = 8;   
 
   const [level, setLevel] = useState(START_LEVEL); 
-  const [trial, setTrial] = useState(1); // 1 o 2
-  const [failures, setFailures] = useState(0); // Fallos acumulados en el nivel actual
+  const [trial, setTrial] = useState(1); 
+  const [failures, setFailures] = useState(0); 
   
+  // Timer: Guardamos el momento de inicio
+  const [startTime] = useState<number>(Date.now());
+
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSequence, setUserSequence] = useState<number[]>([]);
   const [phase, setPhase] = useState<'presentation' | 'input' | 'feedback'>('presentation');
   const [currentDigit, setCurrentDigit] = useState<number | null>(null);
-  const [score, setScore] = useState(0);
   const [feedbackType, setFeedbackType] = useState<'correct' | 'incorrect' | null>(null);
 
   // Animation values
@@ -34,23 +39,41 @@ export default function ReverseSortGame() {
   const feedbackScale = useSharedValue(0);
   const feedbackOpacity = useSharedValue(0);
 
-  // Start game
   useEffect(() => {
     startRound(START_LEVEL);
-  }, []);
-
-  useEffect(() => {
     return () => {
-      try {
-        Speech.stop();
-      } catch (e) {
-        // ignore
-      }
+      try { Speech.stop(); } catch (e) {}
     };
   }, []);
 
+  const markGameAsPlayed = async () => {
+      try {
+          const today = new Date().toISOString().split('T')[0];
+          await AsyncStorage.setItem(GAME_ID, today);
+      } catch (e) {
+          console.error("Error saving game date", e);
+      }
+  };
+
+  const finishGame = async (won: boolean, reason?: string) => {
+    // Calcular tiempo transcurrido
+    const endTime = Date.now();
+    const totalTimeSeconds = Math.floor((endTime - startTime) / 1000);
+
+    await markGameAsPlayed();
+    
+    router.replace({ 
+        pathname: '/games/sort/result', 
+        params: { 
+            won: String(won), 
+            level: level, // Ronda alcanzada
+            time: totalTimeSeconds, // Tiempo total
+            reason: reason 
+        } 
+    });
+  };
+
   const startRound = (currentLevel = level) => {
-    // Generamos números aleatorios del 0 al 9
     const newSequence = Array.from({ length: currentLevel }, () => Math.floor(Math.random() * 10));
     setSequence(newSequence);
     setUserSequence([]);
@@ -59,29 +82,25 @@ export default function ReverseSortGame() {
   };
 
   const playSequence = async (seq: number[]) => {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Pause before start
+    await new Promise(resolve => setTimeout(resolve, 500)); 
 
     for (let i = 0; i < seq.length; i++) {
       setCurrentDigit(seq[i]);
 
-      // Start animation
       digitScale.value = withSequence(withTiming(1.2, { duration: 200 }), withTiming(1, { duration: 200 }));
       digitOpacity.value = withTiming(1, { duration: 200 });
 
-      // Speak immediately
       try {
         Speech.speak(String(seq[i]), {
           language: 'es-US',
           rate: 1.1
         });
-      } catch (e) {
-        // ignore
-      }
+      } catch (e) {}
 
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Show digit
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
 
       digitOpacity.value = withTiming(0, { duration: 200 });
-      await new Promise(resolve => setTimeout(resolve, 200)); // Fade out
+      await new Promise(resolve => setTimeout(resolve, 200)); 
       setCurrentDigit(null);
     }
     setPhase('input');
@@ -89,11 +108,9 @@ export default function ReverseSortGame() {
 
   const handleInput = (num: number) => {
     if (phase !== 'input') return;
-
     const newUserSequence = [...userSequence, num];
     setUserSequence(newUserSequence);
 
-    // Comprobar automáticamente cuando se completa la longitud
     if (newUserSequence.length === sequence.length) {
       checkSequence(newUserSequence);
     }
@@ -105,19 +122,12 @@ export default function ReverseSortGame() {
   };
 
   const checkSequence = async (input: number[]) => {
-    // LÓGICA INVERSA: Comparamos la entrada con la secuencia al revés
     const target = [...sequence].reverse();
     const isCorrect = input.every((val, index) => val === target[index]);
 
-    // Update failures count for this level logic
-    const currentFailures = isCorrect ? failures : failures + 1;
-    // (Nota: no seteamos failures aquí inmediatamente para no afectar lógica asíncrona, usamos variable local)
-
-    // Show feedback
     setPhase('feedback');
     setFeedbackType(isCorrect ? 'correct' : 'incorrect');
 
-    // Animate feedback icon
     feedbackScale.value = withSequence(
       withTiming(0, { duration: 0 }),
       withTiming(1.3, { duration: 300 }),
@@ -125,47 +135,28 @@ export default function ReverseSortGame() {
     );
     feedbackOpacity.value = withTiming(1, { duration: 300 });
 
-    // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Fade out feedback
     feedbackOpacity.value = withTiming(0, { duration: 300 });
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    if (isCorrect) {
-      setScore(prev => prev + level * 100);
-    }
-
-    // --- GAME LOGIC (Progresión Estricta) ---
-    
+    // LÓGICA DE NIVELES
     if (trial === 1) {
-      // Si estamos en la serie 1, pasamos SIEMPRE a la serie 2 del mismo nivel
-      // Guardamos si hubo fallo
       if (!isCorrect) setFailures(failures + 1);
-      
       setTrial(2);
       startRound(level);
     } else {
-      // Estamos al final de la serie 2. Evaluamos el nivel completo.
-      // Calculamos fallos totales: los que traíamos + el actual si falló
       const totalFailures = failures + (isCorrect ? 0 : 1);
 
       if (totalFailures >= 2) {
-        // Falló las dos series (o falló 2 veces en total) -> GAME OVER
-        router.replace({ 
-            pathname: '/games/sort/result', // Ajusta esta ruta a tu pantalla de resultados
-            params: { won: 'false', level: level, score: score, reason: 'failed_level' } 
-        });
+        // Game Over - Perdió
+        finishGame(false, 'failed_level');
       } else {
-        // Pasó al menos una serie -> SIGUIENTE NIVEL
         if (level >= MAX_LEVEL) {
-          // Juego completado
-          router.replace({ 
-            pathname: '/games/sort/result', 
-            params: { won: 'true', level: level, score: score + (level * 100) } 
-          });
+          // Game Over - Ganó todo
+          finishGame(true);
         } else {
-          // Next level
+          // Siguiente Nivel
           const nextLevel = level + 1;
           setLevel(nextLevel);
           setTrial(1);
@@ -188,7 +179,6 @@ export default function ReverseSortGame() {
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
-      {/* Header */}
       <View style={globalStyles.header}>
         <TouchableOpacity
           style={[globalStyles.iconButton, { backgroundColor: theme.surface }]}
@@ -237,7 +227,6 @@ export default function ReverseSortGame() {
                 Escribe en orden <Text style={{color: theme.error, fontWeight: 'bold'}}>INVERSO</Text>
             </Text>
 
-            {/* Slots */}
             <View style={styles.slotsContainer}>
               {Array.from({ length: sequence.length }).map((_, i) => (
                 <View
@@ -257,7 +246,6 @@ export default function ReverseSortGame() {
               ))}
             </View>
 
-            {/* Keypad */}
             <View style={styles.keypad}>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                 <TouchableOpacity
@@ -268,17 +256,13 @@ export default function ReverseSortGame() {
                   <Text style={[styles.keyText, { color: theme.text }]}>{num}</Text>
                 </TouchableOpacity>
               ))}
-              
-              {/* Espacio vacío para centrar el 0 */}
               <View style={styles.key} />
-              
               <TouchableOpacity
                 style={[styles.key, { backgroundColor: theme.surface }]}
                 onPress={() => handleInput(0)}
               >
                 <Text style={[styles.keyText, { color: theme.text }]}>0</Text>
               </TouchableOpacity>
-              
               <TouchableOpacity
                 style={[styles.key, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}
                 onPress={handleBackspace}

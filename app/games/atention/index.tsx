@@ -2,14 +2,35 @@ import { Colors } from '@/constants/colors';
 import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useRouter, useFocusEffect } from 'expo-router'; // Importar useFocusEffect
+import React, { useState, useCallback } from 'react'; // Hooks necesarios
 import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
+
+const GAME_ID = 'ATTENTION_GAME_LAST_PLAYED'; // ID Único
 
 export default function AttentionIntro() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
+  const [isLocked, setIsLocked] = useState(false); // Estado de bloqueo
+
+  // Verificar disponibilidad al entrar
+  useFocusEffect(
+    useCallback(() => {
+      checkAvailability();
+    }, [])
+  );
+
+  const checkAvailability = async () => {
+    try {
+      const lastPlayedDate = await AsyncStorage.getItem(GAME_ID);
+      const today = new Date().toISOString().split('T')[0];
+      setIsLocked(lastPlayedDate === today);
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
@@ -29,28 +50,52 @@ export default function AttentionIntro() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.titleContainer}>
-          <Text style={[styles.title, { color: theme.text }]}>Escucha y Repite</Text>
+          <Text style={[styles.title, { color: theme.text }]}>
+            {isLocked ? 'Sesión Completada' : 'Escucha y Repite'}
+          </Text>
         </View>
 
         {/* Illustration Placeholder */}
         <View style={[styles.illustrationContainer, { backgroundColor: theme.surface }]}>
-          <MaterialIcons name="memory" size={80} color={theme.primary} style={{ opacity: 0.8 }} />
-          <View style={[styles.blob, { backgroundColor: theme.primary, opacity: 0.1 }]} />
+          {isLocked ? (
+             <MaterialIcons name="check-circle" size={80} color={isDark ? '#94a3b8' : '#64748b'} style={{ opacity: 0.8 }} />
+          ) : (
+             <>
+               <MaterialIcons name="memory" size={80} color={theme.primary} style={{ opacity: 0.8 }} />
+               <View style={[styles.blob, { backgroundColor: theme.primary, opacity: 0.1 }]} />
+             </>
+          )}
         </View>
 
         <View style={styles.descriptionContainer}>
           <Text style={[styles.description, { color: theme.text }]}>
-            Observa los números aparecer, luego escríbelos en el <Text style={{ color: theme.primary, fontWeight: 'bold' }}>MISMO</Text> orden exacto.
+            {isLocked 
+              ? "Ya has realizado tu entrenamiento de atención por hoy. ¡Vuelve mañana!"
+              : <Text>Observa los números aparecer, luego escríbelos en el <Text style={{ color: theme.primary, fontWeight: 'bold' }}>MISMO</Text> orden exacto.</Text>
+            }
           </Text>
         </View>
 
         <View style={styles.footer}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: theme.primary, shadowColor: theme.primary }]}
+            style={[
+                styles.button, 
+                { 
+                    backgroundColor: isLocked ? (isDark ? '#334155' : '#cbd5e1') : theme.primary,
+                    shadowColor: isLocked ? 'transparent' : theme.primary 
+                }
+            ]}
             onPress={() => router.push('/games/atention/game')}
+            disabled={isLocked}
           >
-            <Text style={styles.buttonText}>Listo</Text>
-            <MaterialIcons name="arrow-forward" size={24} color={Colors.gray900} />
+            <Text style={[styles.buttonText, isLocked && { color: '#fff' }]}>
+                {isLocked ? 'Completado por hoy' : 'Listo'}
+            </Text>
+            <MaterialIcons 
+                name={isLocked ? "lock" : "arrow-forward"} 
+                size={24} 
+                color={isLocked ? "#fff" : Colors.gray900} 
+            />
           </TouchableOpacity>
         </View>
       </ScrollView>

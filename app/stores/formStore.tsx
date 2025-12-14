@@ -49,18 +49,43 @@ async function saveState(state: CogFormState) {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+/**
+ * ✅ Mapeo de preguntas -> dominio
+ * (Debe coincidir con las keys que usas en el Form)
+ */
+const ITEM_DOMAIN: Record<string, Domain> = {
+  room_forget: "atencio",
+  slow_activity: "velocitat",
+  word_block: "fluencia",
+  lose_thread: "atencio",
+  recent_forget: "memoria",
+  longterm_forget: "memoria",
+  decision_hard: "executives",
+  plan_day: "executives",
+  brain_fog: "executives",
+  think_slower: "velocitat",
+};
+
 export function useFormStore() {
   const [state, setState] = useState<CogFormState>(DEFAULT_STATE);
   const [ready, setReady] = useState(false);
 
   const today = useMemo(() => dayKey(), []);
 
+  // ✅ carga inicial
   useEffect(() => {
     (async () => {
       const s = await loadState();
       setState(s);
       setReady(true);
     })();
+  }, []);
+
+  // ✅ refrescar manual (Opción A)
+  const refresh = useCallback(async () => {
+    const s = await loadState();
+    setState(s);
+    setReady(true);
   }, []);
 
   const setMood = useCallback((mood: CogFormState["mood"]) => {
@@ -89,7 +114,7 @@ export function useFormStore() {
     });
   }, []);
 
-  // ✅ (opcional) restar (si luego lo quieres)
+  // ✅ (opcional) restar
   const decrementItem = useCallback((key: string) => {
     setState((prev) => {
       const t = dayKey();
@@ -131,15 +156,58 @@ export function useFormStore() {
     [state.daily]
   );
 
+  // ✅ Conteo por dominios para un día (por defecto hoy)
+  const getDomainCountsForDay = useCallback(
+    (day = dayKey()) => {
+      const counts: Record<Domain, number> = {
+        atencio: 0,
+        velocitat: 0,
+        fluencia: 0,
+        memoria: 0,
+        executives: 0,
+      };
+
+      const dayCounts = state.daily[day] ?? {};
+      for (const [itemKey, c] of Object.entries(dayCounts)) {
+        const domain = ITEM_DOMAIN[itemKey];
+        if (!domain) continue;
+        counts[domain] += Number(c) || 0;
+      }
+
+      return counts;
+    },
+    [state.daily]
+  );
+
+  // ✅ Lista ordenada de dominios “afectados” (conteo > 0), por defecto hoy
+  const getAffectedDomainsForDay = useCallback(
+    (day = dayKey()) => {
+      const counts = getDomainCountsForDay(day);
+      const affected = (Object.keys(counts) as Domain[])
+        .filter((d) => counts[d] > 0)
+        .sort((a, b) => counts[b] - counts[a]);
+
+      return { counts, affected };
+    },
+    [getDomainCountsForDay]
+  );
+
   return {
     state,
     ready,
     today,
+
     setMood,
     incrementItem,
-    decrementItem, // lo dejamos por si lo quieres luego
+    decrementItem,
     setNotes,
     reset,
+
     getTodayCount,
+
+    // ✅ para Home
+    refresh,
+    getDomainCountsForDay,
+    getAffectedDomainsForDay,
   };
 }

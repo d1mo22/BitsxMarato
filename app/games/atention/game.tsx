@@ -1,5 +1,3 @@
-
-
 import { Colors } from '@/constants/colors';
 import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
@@ -10,13 +8,16 @@ import * as Speech from 'expo-speech';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
+
+const GAME_ID = 'ATTENTION_GAME_LAST_PLAYED'; // Mismo ID
 
 export default function AttentionGame() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
 
-  const [level, setLevel] = useState(4); // Sequence length (4 to 9)
-  const [trial, setTrial] = useState(1); // 1 or 2
+  const [level, setLevel] = useState(4); 
+  const [trial, setTrial] = useState(1); 
   const [failures, setFailures] = useState(0);
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSequence, setUserSequence] = useState<number[]>([]);
@@ -31,7 +32,6 @@ export default function AttentionGame() {
   const feedbackScale = useSharedValue(0);
   const feedbackOpacity = useSharedValue(0);
 
-  // Start game
   useEffect(() => {
     startRound(4);
   }, []);
@@ -40,11 +40,19 @@ export default function AttentionGame() {
     return () => {
       try {
         Speech.stop();
-      } catch (e) {
-        // ignore
-      }
+      } catch (e) {}
     };
   }, []);
+
+  // Función para guardar fecha
+  const markGameAsPlayed = async () => {
+      try {
+          const today = new Date().toISOString().split('T')[0];
+          await AsyncStorage.setItem(GAME_ID, today);
+      } catch (e) {
+          console.error("Error saving game date", e);
+      }
+  };
 
   const startRound = (currentLevel = level) => {
     const newSequence = Array.from({ length: currentLevel }, () => Math.floor(Math.random() * 10));
@@ -56,26 +64,22 @@ export default function AttentionGame() {
 
   const playSequence = async (seq: number[]) => {
     for (let i = 0; i < seq.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Pause before digit
+      await new Promise(resolve => setTimeout(resolve, 500)); 
       setCurrentDigit(seq[i]);
 
-      // Start animation
       digitScale.value = withSequence(withTiming(1.2, { duration: 200 }), withTiming(1, { duration: 200 }));
       digitOpacity.value = withTiming(1, { duration: 200 });
 
-      // Speak immediately
       try {
         Speech.speak(String(seq[i]), {
           language: 'es-US',
         });
-      } catch (e) {
-        // ignore
-      }
+      } catch (e) {}
 
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Show digit
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
 
       digitOpacity.value = withTiming(0, { duration: 200 });
-      await new Promise(resolve => setTimeout(resolve, 200)); // Fade out
+      await new Promise(resolve => setTimeout(resolve, 200)); 
       setCurrentDigit(null);
     }
     setPhase('input');
@@ -83,7 +87,6 @@ export default function AttentionGame() {
 
   const handleInput = (num: number) => {
     if (phase !== 'input') return;
-
     const newUserSequence = [...userSequence, num];
     setUserSequence(newUserSequence);
 
@@ -100,15 +103,12 @@ export default function AttentionGame() {
   const checkSequence = async (input: number[]) => {
     const isCorrect = input.every((val, index) => val === sequence[index]);
 
-    // Update failures count for this level
     const currentFailures = isCorrect ? failures : failures + 1;
     if (!isCorrect) setFailures(currentFailures);
 
-    // Show feedback
     setPhase('feedback');
     setFeedbackType(isCorrect ? 'correct' : 'incorrect');
 
-    // Animate feedback icon
     feedbackScale.value = withSequence(
       withTiming(0, { duration: 0 }),
       withTiming(1.3, { duration: 300 }),
@@ -116,10 +116,8 @@ export default function AttentionGame() {
     );
     feedbackOpacity.value = withTiming(1, { duration: 300 });
 
-    // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Fade out feedback
     feedbackOpacity.value = withTiming(0, { duration: 300 });
     await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -129,21 +127,20 @@ export default function AttentionGame() {
 
     // Game Logic
     if (trial === 1) {
-      // Move to second trial of same level
       setTrial(2);
       startRound(level);
     } else {
-      // End of second trial
       if (currentFailures >= 2) {
-        // Failed both trials (or failed 2 times in this level)
+        // PERDIDO -> Guardar y salir
+        await markGameAsPlayed();
         router.replace({ pathname: '/games/atention/result', params: { score: score } });
       } else {
-        // Passed at least one trial
         if (level >= 9) {
-          // Max level reached
+          // GANADO (Max nivel) -> Guardar y salir
+          await markGameAsPlayed();
           router.replace({ pathname: '/games/atention/result', params: { score: score + level * 10 } });
         } else {
-          // Next level
+          // SIGUIENTE NIVEL
           const nextLevel = level + 1;
           setLevel(nextLevel);
           setTrial(1);
@@ -208,7 +205,6 @@ export default function AttentionGame() {
           <View style={styles.inputContainer}>
             <Text style={[styles.instructionText, { color: theme.textSecondary }]}>Repite la secuencia</Text>
 
-            {/* Slots */}
             <View style={styles.slotsContainer}>
               {Array.from({ length: sequence.length }).map((_, i) => (
                 <View
@@ -228,7 +224,6 @@ export default function AttentionGame() {
               ))}
             </View>
 
-            {/* Keypad */}
             <View style={styles.keypad}>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                 <TouchableOpacity

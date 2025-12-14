@@ -10,10 +10,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import Voice from '@react-native-voice/voice';
 import { useColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
 
 type Turn = 'letter' | 'category';
 
 const TOTAL_TIME = 60;
+const GAME_ID = 'VERBAL_FLUENCY_LAST_PLAYED'; // Mismo ID que en index
 
 // Letras “amables” para español (evita K/W/X/Y si quieres)
 const LETTER_POOL = 'ABCDEFGHILMNOPQRSTUVZ'.split('');
@@ -51,15 +53,6 @@ export default function VerbalFluencyGame() {
 
   useEffect(() => { turnRef.current = turn; }, [turn]);
   useEffect(() => { usedRef.current = usedWords; }, [usedWords]);
-
-  // const theme = {
-  //   background: isDark ? Colors.backgroundDark : Colors.backgroundLight,
-  //   text: isDark ? Colors.white : Colors.gray900,
-  //   textSecondary: isDark ? Colors.gray400 : Colors.gray500,
-  //   surface: isDark ? Colors.surfaceDark : Colors.surfaceLight,
-  //   border: isDark ? 'rgba(255,255,255,0.05)' : Colors.gray200,
-  //   primary: Colors.primary,
-  // };
 
   // Pulse animation
   const pulseScale = useSharedValue(1);
@@ -164,11 +157,8 @@ export default function VerbalFluencyGame() {
 
   useEffect(() => {
     const randomLetter = LETTER_POOL[Math.floor(Math.random() * LETTER_POOL.length)] ?? 'P';
-
     const keys = Object.keys(CATEGORIES) as Array<keyof typeof CATEGORIES>;
     const randomCategory = keys[Math.floor(Math.random() * keys.length)] ?? 'animals';
-
-
 
     setLetter(randomLetter);
     setCategoryId(randomCategory);
@@ -187,16 +177,14 @@ export default function VerbalFluencyGame() {
     keepListening.current = false;
     try { Voice.stop(); } catch { }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // <-- cada vez que entras a esta pantalla
+  }, []); 
 
   // Validation
   const validate = (text: string) => {
-    // última palabra (mejor para habla “encadenada”)
     const word = normalize(text).split(/\s+/).pop();
 
     if (!word) return;
 
-    // evita repetir
     if (usedRef.current.includes(word)) {
       setError('Palabra repetida');
       return;
@@ -215,7 +203,6 @@ export default function VerbalFluencyGame() {
       }
     }
 
-    // ok
     setError(null);
     setLastWord(word);
 
@@ -238,6 +225,10 @@ export default function VerbalFluencyGame() {
 
       if (left === 0) {
         stopAll();
+        // GUARDAR FECHA AL TERMINAR
+        const today = new Date().toISOString().split('T')[0];
+        AsyncStorage.setItem(GAME_ID, today).catch(e => console.error("Error saving game", e));
+        
         router.replace('/games/verbal-fluency/result');
       }
     }, 250);
@@ -271,7 +262,6 @@ export default function VerbalFluencyGame() {
       validate(t);
       lastPartial.current = null;
 
-      // reinicio rápido
       try { await Voice.stop(); } catch { }
       setListening(false);
 
@@ -284,8 +274,6 @@ export default function VerbalFluencyGame() {
 
     Voice.onSpeechEnd = () => {
       setListening(false);
-
-      // fallback si solo hubo partial
       if (lastPartial.current) {
         validate(lastPartial.current);
         lastPartial.current = null;
@@ -333,7 +321,6 @@ export default function VerbalFluencyGame() {
     else stopAll();
   };
 
-  // UI ring
   const progress = (TOTAL_TIME - timeLeft) / TOTAL_TIME;
   const circumference = 2 * Math.PI * 46;
 
