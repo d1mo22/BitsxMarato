@@ -14,7 +14,7 @@ export default function AttentionIntro() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
   const [isLocked, setIsLocked] = useState(false); // Estado de bloqueo
-  setIsLocked(false)
+
   // Verificar disponibilidad al entrar
   useFocusEffect(
     useCallback(() => {
@@ -30,6 +30,7 @@ export default function AttentionIntro() {
     } catch (error) {
       console.error('Error checking availability:', error);
     }
+    setIsLocked(false);
   };
 
   return (
@@ -86,7 +87,7 @@ export default function AttentionIntro() {
               }
             ]}
             onPress={() => router.push('/games/atention/game')}
-          // </View>disabled={isLocked}
+          //disabled={isLocked}
           >
             <Text style={[styles.buttonText, isLocked && { color: '#fff' }]}>
               {isLocked ? 'Completado por hoy' : 'Listo'}
