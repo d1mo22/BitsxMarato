@@ -50,12 +50,12 @@ async function openExternalUrl(url: string) {
   try {
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
-      Alert.alert("No es pot obrir", "No he pogut obrir aquest enllaç.");
+      Alert.alert("No se puede abrir", "No he podido abrir este enlace.");
       return;
     }
     await Linking.openURL(url);
   } catch {
-    Alert.alert("Error", "Hi ha hagut un problema obrint l’enllaç.");
+    Alert.alert("Error", "Ha habido un problema abriendo el enlace.");
   }
 }
 
@@ -79,15 +79,15 @@ function categoryLabelForBadge(key: CategoryKey) {
     case "general":
       return "General";
     case "memoria_treball":
-      return "Memòria de treball";
+      return "Memoria de trabajo";
     case "fluencia_alternant":
-      return "Fluència alternant";
+      return "Fluencia alternante";
     case "atencio":
-      return "Atenció";
+      return "Atención";
     case "velocitat":
-      return "Velocitat";
+      return "Velocidad";
     case "executives":
-      return "Funcions executives";
+      return "Funciones ejecutivas";
   }
 }
 
@@ -120,7 +120,7 @@ export default function WellnessScreen() {
       {
         key: "general",
         title: "General",
-        subtitle: "Recomanacions globals per al benestar cognitiu",
+        subtitle: "Recomendaciones globales para el bienestar cognitivo",
         icon: "health-and-safety",
         videos: [
           { id: "g1", title: "La cognición y sus funciones", duration: "6:00", url: "https://youtu.be/hcBaJisV1Wo?feature=shared" },
@@ -128,17 +128,17 @@ export default function WellnessScreen() {
           { id: "g3", title: "Déficits cognitivos en el día a día", duration: "4:45", url: "https://www.youtube.com/watch?v=24P5B6L0IgQ" },
         ],
         tips: [
-          "Mantén horaris regulars de son.",
-          "Fes pauses breus cada 25–30 minuts.",
-          "Hidrata’t sovint durant el dia.",
-          "Redueix la multitarea quan estàs cansat/da.",
-          "Exposició a llum natural al matí.",
+          "Mantén horarios regulares de sueño.",
+          "Haz pausas breves cada 25–30 minutos.",
+          "Hidrátate a menudo durante el día.",
+          "Reduce la multitarea cuando estés cansado/a.",
+          "Exposición a luz natural por la mañana.",
         ],
       },
       {
         key: "memoria_treball",
-        title: "Memòria de treball",
-        subtitle: "Mantenir i manipular informació mentalment",
+        title: "Memoria de trabajo",
+        subtitle: "Mantener y manipular información mentalmente",
         icon: "memory",
         videos: [
           { id: "m1", title: "Aliviar problemas cognitivos: Estimulación", duration: "6:29", url: "https://www.youtube.com/watch?v=RExO6edCQYk" },
@@ -146,15 +146,15 @@ export default function WellnessScreen() {
           { id: "m3", title: "La agenda", duration: "4:01", url: "https://www.youtube.com/watch?v=iGTnb1YeRNw" },
         ],
         tips: [
-          "Aquesta setmana és ideal per recuperar una recepta que et sortia molt bé.",
-          "Prova d’aprendre 5 paraules d’un idioma nou i repeteix-les al final del dia.",
-          "Apunta 3 coses importants del dia i revisa-les abans d’anar a dormir.",
+          "Esta semana es ideal para recuperar una receta que te salía muy bien.",
+          "Prueba a aprender 5 palabras de un idioma nuevo y repítelas al final del día.",
+          "Apunta 3 cosas importantes del día y revísalas antes de ir a dormir.",
         ],
       },
       {
         key: "fluencia_alternant",
-        title: "Fluència verbal alternant",
-        subtitle: "Canviar entre categories o criteris",
+        title: "Fluencia verbal alternante",
+        subtitle: "Cambiar entre categorías o criterios",
         icon: "swap-horiz",
         videos: [
           { id: "f1", title: "Mindfulness", duration: "5:20", url: "https://www.youtube.com/watch?v=B_M8eFq2GCA" },
@@ -164,15 +164,15 @@ export default function WellnessScreen() {
           { id: "f5", title: "Cómo tratar a los fallos cognitivos: Aceptación", duration: "7:16", url: "https://www.youtube.com/watch?v=zXqljYzFb3w" },
         ],
         tips: [
-          "Durant 2 minuts: alterna fruites i animals (poma–gos–pera–gat…).",
-          "Durant 2 minuts: alterna paraules amb P i ciutats.",
-          "Descriu 5 objectes del teu voltant amb 3 paraules cadascun.",
+          "Durante 2 minutos: alterna frutas y animales (manzana–perro–pera–gato…).",
+          "Durante 2 minutos: alterna palabras con P y ciudades.",
+          "Describe 5 objetos de tu alrededor con 3 palabras cada uno.",
         ],
       },
       {
         key: "atencio",
-        title: "Atenció",
-        subtitle: "Mantenir el focus i no perdre el fil",
+        title: "Atención",
+        subtitle: "Mantener el foco y no perder el hilo",
         icon: "center-focus-strong",
         videos: [
           { id: "a1", title: "Mindfulness", duration: "5:20", url: "https://www.youtube.com/watch?v=B_M8eFq2GCA" },
@@ -182,38 +182,38 @@ export default function WellnessScreen() {
           { id: "a5", title: "Cómo tratar a los fallos cognitivos: Aceptación", duration: "7:16", url: "https://www.youtube.com/watch?v=zXqljYzFb3w" },
         ],
         tips: [
-          "Fes una tasca 10 minuts sense interrupcions (mòbil en silenci).",
-          "Llegeix un paràgraf i resumeix-lo en 1 frase.",
-          "Quan parlis amb algú: repeteix mentalment la idea principal cada 20–30s.",
+          "Haz una tarea 10 minutos sin interrupciones (móvil en silencio).",
+          "Lee un párrafo y resúmelo en 1 frase.",
+          "Cuando hables con alguien: repite mentalmente la idea principal cada 20–30s.",
         ],
       },
       {
         key: "velocitat",
-        title: "Velocitat de processament",
-        subtitle: "Pensar i reaccionar amb agilitat",
+        title: "Velocidad de procesamiento",
+        subtitle: "Pensar y reaccionar con agilidad",
         icon: "speed",
         videos: [
           { id: "v1", title: "Aliviar problemas cognitivos: Estimulación", duration: "6:29", url: "https://www.youtube.com/watch?v=RExO6edCQYk" },
           { id: "v2", title: "Aliviar problemas cognitivos: Estrategias compensatorias", duration: "7:16", url: "https://www.youtube.com/watch?v=FJIy-R3Gze4" },
         ],
         tips: [
-          "Una cosa cada cop: prioritzar accelera.",
-          "Fes decisions petites amb límit de 10–15 segons (roba, beguda, etc.).",
-          "Quan vagis al súper: troba 3 productes el més ràpid possible (sense córrer).",
+          "Una cosa cada vez: priorizar acelera.",
+          "Toma decisiones pequeñas con límite de 10–15 segundos (ropa, bebida, etc.).",
+          "Cuando vayas al súper: encuentra 3 productos lo más rápido posible (sin correr).",
         ],
       },
       {
         key: "executives",
-        title: "Funcions executives",
-        subtitle: "Planificació, decisions i organització",
+        title: "Funciones ejecutivas",
+        subtitle: "Planificación, decisiones y organización",
         icon: "account-tree",
         videos: [
           { id: "e1", title: "Planificación diaria (estrategias)", duration: "6:00", url: "https://www.youtube.com/watch?v=FJIy-R3Gze4" },
         ],
         tips: [
-          "Tria 3 objectius del dia i escriu-los.",
-          "Divideix una tasca gran en 3 passos petits.",
-          "Comença per la tasca que et desbloqueja la resta.",
+          "Elige 3 objetivos del día y escríbelos.",
+          "Divide una tarea grande en 3 pasos pequeños.",
+          "Empieza por la tarea que te desbloquea el resto.",
         ],
       },
     ],
@@ -287,7 +287,7 @@ export default function WellnessScreen() {
 
       {/* Header */}
       <View style={[globalStyles.header, { paddingHorizontal: 16 }]}>
-        <Text style={[globalStyles.title, { color: theme.text }]}>Benestar</Text>
+        <Text style={[globalStyles.title, { color: theme.text }]}>Bienestar</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
@@ -302,13 +302,13 @@ export default function WellnessScreen() {
           ]}
         >
           <Text style={{ color: theme.text, fontWeight: "900" }}>
-            Recomanacions d’avui ({today})
+            Recomendaciones de hoy ({today})
           </Text>
           {!ready ? (
-            <Text style={{ color: theme.textSecondary, marginTop: 6, fontWeight: "700" }}>Carregant…</Text>
+            <Text style={{ color: theme.textSecondary, marginTop: 6, fontWeight: "700" }}>Cargando…</Text>
           ) : affectedCategoryKeysSorted.length === 0 ? (
             <Text style={{ color: theme.textSecondary, marginTop: 6, fontWeight: "700" }}>
-              No has marcat cap episodi avui. “General” sempre està disponible.
+              No has marcado ningún episodio hoy. “General” siempre está disponible.
             </Text>
           ) : (
             <View style={{ marginTop: 8, gap: 6 }}>
@@ -350,7 +350,7 @@ export default function WellnessScreen() {
                           ]}
                         >
                           <Text style={{ color: theme.text, fontWeight: "900", fontSize: 12 }}>
-                            Recomanat avui · {recCount}
+                            Recomendado hoy · {recCount}
                           </Text>
                         </View>
                       )}
@@ -385,7 +385,7 @@ export default function WellnessScreen() {
                         <View style={{ flex: 1 }}>
                           <Text style={[styles.videoTitle, { color: theme.text }]}>{v.title}</Text>
                           <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 2 }}>
-                            {v.duration} · Toca per obrir a YouTube
+                            {v.duration} · Toca para abrir en YouTube
                           </Text>
                         </View>
                         <MaterialIcons
@@ -399,7 +399,7 @@ export default function WellnessScreen() {
 
                   {/* Tips */}
                   <View>
-                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Recomanacions</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Recomendaciones</Text>
 
                     {cat.tips.map((t, i) => (
                       <View key={i} style={styles.tipRow}>

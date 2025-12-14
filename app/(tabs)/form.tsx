@@ -17,15 +17,15 @@ type ItemDef = {
 function domainLabel(d: Domain) {
   switch (d) {
     case "atencio":
-      return "Atenció";
+      return "Atención";
     case "velocitat":
-      return "Velocitat de processament";
+      return "Velocidad de procesamiento";
     case "fluencia":
-      return "Fluència verbal";
+      return "Fluidez verbal";
     case "memoria":
-      return "Memòria";
+      return "Memoria";
     case "executives":
-      return "Funcions executives";
+      return "Funciones ejecutivas";
   }
 }
 
@@ -119,13 +119,13 @@ function ItemRow({
             ]}
           >
             <Text style={[styles.countText, { color: active ? "#fff" : theme.text }]}>
-              Avui: {count}
+              Hoy: {count}
             </Text>
           </View>
         </View>
 
         <Text style={{ color: theme.textSecondary, fontSize: 12 }}>
-          Toca cada vegada que et passi (suma +1)
+          Toca cada vez que te pase (suma +1)
         </Text>
       </View>
     </TouchableOpacity>
@@ -154,16 +154,16 @@ export default function FormTabScreen() {
 
   const ITEMS: ItemDef[] = useMemo(
     () => [
-      { key: "room_forget", text: "He anat a un lloc de l’habitació i, quan hi he arribat, no he recordat què hi anava a fer.", domain: "atencio" },
-      { key: "slow_activity", text: "He trigat més del normal a fer una activitat que abans feia més ràpid.", domain: "velocitat" },
-      { key: "word_block", text: "Volia dir una paraula i no m’ha sortit, o n’he dit una altra sense voler.", domain: "fluencia" },
-      { key: "lose_thread", text: "Quan estava parlant amb algú, he perdut el fil de la conversa.", domain: "atencio" },
-      { key: "recent_forget", text: "M’han preguntat per una cosa que m’havien dit fa poc i no me n’he recordat.", domain: "memoria" },
-      { key: "longterm_forget", text: "He tingut problemes per recordar informació que ja sabia prèviament.", domain: "memoria" },
-      { key: "decision_hard", text: "He tingut problemes per prendre una decisió que abans no m’hauria costat.", domain: "executives" },
-      { key: "plan_day", text: "He tingut dificultats per planificar el meu dia.", domain: "executives" },
-      { key: "brain_fog", text: "He sentit sensació de nebulosa mental.", domain: "executives" },
-      { key: "think_slower", text: "He sentit que penso més lenta avui.", domain: "velocitat" },
+      { key: "room_forget", text: "He ido a un lugar de la habitación y, al llegar, no recordaba qué iba a hacer.", domain: "atencio" },
+      { key: "slow_activity", text: "He tardado más de lo normal en hacer una actividad que antes hacía más rápido.", domain: "velocitat" },
+      { key: "word_block", text: "Quería decir una palabra y no me ha salido, o he dicho otra sin querer.", domain: "fluencia" },
+      { key: "lose_thread", text: "Cuando estaba hablando con alguien, he perdido el hilo de la conversación.", domain: "atencio" },
+      { key: "recent_forget", text: "Me han preguntado por algo que me habían dicho hace poco y no lo he recordado.", domain: "memoria" },
+      { key: "longterm_forget", text: "He tenido problemas para recordar información que ya sabía previamente.", domain: "memoria" },
+      { key: "decision_hard", text: "He tenido problemas para tomar una decisión que antes no me habría costado.", domain: "executives" },
+      { key: "plan_day", text: "He tenido dificultades para planificar mi día.", domain: "executives" },
+      { key: "brain_fog", text: "He sentido sensación de neblina mental.", domain: "executives" },
+      { key: "think_slower", text: "He sentido que pienso más lento hoy.", domain: "velocitat" },
     ],
     []
   );
@@ -193,7 +193,7 @@ export default function FormTabScreen() {
     return (
       <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
         <View style={{ padding: 24 }}>
-          <Text style={{ color: theme.text }}>Carregant…</Text>
+          <Text style={{ color: theme.text }}>Cargando…</Text>
         </View>
       </SafeAreaView>
     );
@@ -203,7 +203,7 @@ export default function FormTabScreen() {
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
       <View style={[globalStyles.header, { paddingHorizontal: 16 }]}>
-        <Text style={[globalStyles.title, { color: theme.text }]}>Registre</Text>
+        <Text style={[globalStyles.title, { color: theme.text }]}>Registro</Text>
         <TouchableOpacity onPress={reset} style={{ padding: 8 }}>
           <MaterialIcons name="restart-alt" size={22} color={theme.textSecondary} />
         </TouchableOpacity>
@@ -212,28 +212,28 @@ export default function FormTabScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {/* Día */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Avui ({today})</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Hoy ({today})</Text>
           <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
-            Toca una afirmació cada vegada que t’hagi passat. Es guarda automàticament.
+            Toca una afirmación cada vez que te haya pasado. Se guarda automáticamente.
           </Text>
         </View>
 
         {/* Mood */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Com et sents?</Text>
-          <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>Opcional.</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>¿Cómo te sientes?</Text>
+          <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}></Text>
 
           <View style={styles.rowWrap}>
-            <Pill label="🙂 Bé" active={state.mood === "bien"} onPress={() => setMood("bien")} theme={theme} />
+            <Pill label="🙂 Bien" active={state.mood === "bien"} onPress={() => setMood("bien")} theme={theme} />
             <Pill label="😐 Regular" active={state.mood === "regular"} onPress={() => setMood("regular")} theme={theme} />
             <Pill label="🙁 Mal" active={state.mood === "mal"} onPress={() => setMood("mal")} theme={theme} />
-            <Pill label="Treure" active={state.mood === null} onPress={() => setMood(null)} theme={theme} />
+            <Pill label="Quitar" active={state.mood === null} onPress={() => setMood(null)} theme={theme} />
           </View>
         </View>
 
         {/* Preguntas */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Avui m’ha passat…</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Hoy me ha pasado…</Text>
 
           <View style={{ gap: 12, marginTop: 12 }}>
             {ITEMS.map((it) => {
@@ -254,14 +254,14 @@ export default function FormTabScreen() {
 
         {/* Resumen */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Resum d’àrees (avui)</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Resumen de áreas (hoy)</Text>
           <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
-            Total d’episodis avui per àrea:
+            Total de episodios hoy por área:
           </Text>
 
           {summary.affected.length === 0 ? (
             <Text style={{ color: theme.textSecondary, fontWeight: "700" }}>
-              Encara no has marcat cap episodi.
+              Todavía no has marcado ningún episodio.
             </Text>
           ) : (
             <View style={{ gap: 10 }}>
@@ -277,18 +277,18 @@ export default function FormTabScreen() {
           )}
 
           <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 12 }}>
-            Última actualització: {state.updatedAt ? new Date(state.updatedAt).toLocaleString() : "—"}
+            Última actualización: {state.updatedAt ? new Date(state.updatedAt).toLocaleString() : "—"}
           </Text>
         </View>
 
         {/* Notes */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Notes</Text>
+          <Text style={[styles.cardTitle, { color: theme.text, paddingBottom: 12 }]}>Notas</Text>
 
           <TextInput
             value={state.notes}
             onChangeText={setNotes}
-            placeholder="Escriu alguna cosa…"
+            placeholder="Escribe algo…"
             placeholderTextColor={isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)"}
             multiline
             style={[
