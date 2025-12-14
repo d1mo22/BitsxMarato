@@ -51,7 +51,7 @@ export default function RevesInstructionScreen() {
                 >
                     <MaterialIcons name="arrow-back" size={24} color={theme.text} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: theme.text }]}>Memoria de Trabajo</Text>
+                <Text style={[styles.headerTitle, { color: theme.textSecondary }]}>MEMORIA</Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -62,14 +62,14 @@ export default function RevesInstructionScreen() {
                 {/* Hero Illustration */}
                 <View style={styles.heroContainer}>
                     <View style={[
-                        styles.heroCircle, 
+                        styles.heroCircle,
                         { backgroundColor: isDark ? 'rgba(76, 230, 138, 0.1)' : 'rgba(76, 230, 138, 0.2)' },
                         isLocked && { backgroundColor: isDark ? '#334155' : '#e2e8f0' } // Gris si está bloqueado
                     ]}>
-                        <MaterialIcons 
-                            name={isLocked ? "lock" : "undo"} 
-                            size={48} 
-                            color={isLocked ? (isDark ? '#94a3b8' : '#64748b') : theme.primary} 
+                        <MaterialIcons
+                            name={isLocked ? "lock" : "undo"}
+                            size={48}
+                            color={isLocked ? (isDark ? '#94a3b8' : '#64748b') : theme.primary}
                         />
                     </View>
                 </View>
@@ -81,7 +81,7 @@ export default function RevesInstructionScreen() {
 
                 {/* Body Text */}
                 <Text style={[styles.description, { color: theme.textSecondary }]}>
-                    {isLocked 
+                    {isLocked
                         ? "Has completado tu ejercicio de memoria por hoy. El descanso es parte fundamental del entrenamiento."
                         : <Text>¡Parte complicada! Observa los números, pero escríbelos <Text style={{ color: theme.primary, fontWeight: 'bold' }}>HACIA ATRÁS</Text>.</Text>
                     }
@@ -129,7 +129,7 @@ export default function RevesInstructionScreen() {
             <View style={styles.footer}>
                 <TouchableOpacity
                     style={[
-                        styles.button, 
+                        styles.button,
                         { backgroundColor: isLocked ? (isDark ? '#334155' : '#cbd5e1') : theme.primary } // Botón gris si bloqueado
                     ]}
                     onPress={() => router.push('/games/reves/game')}
@@ -138,10 +138,10 @@ export default function RevesInstructionScreen() {
                     <Text style={[styles.buttonText, isLocked && { color: '#fff' }]}>
                         {isLocked ? 'Completado por hoy' : 'Comenzar'}
                     </Text>
-                    <MaterialIcons 
-                        name={isLocked ? "lock" : "play-arrow"} 
-                        size={24} 
-                        color={isLocked ? "#fff" : "#0e1f15"} 
+                    <MaterialIcons
+                        name={isLocked ? "lock" : "play-arrow"}
+                        size={24}
+                        color={isLocked ? "#fff" : "#0e1f15"}
                     />
                 </TouchableOpacity>
             </View>
@@ -150,11 +150,11 @@ export default function RevesInstructionScreen() {
 }
 
 const styles = StyleSheet.create({
-    // ... Tus estilos originales se mantienen igual
     headerTitle: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: 'bold',
-        textAlign: 'center',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
     progressContainer: {
         flexDirection: 'row',

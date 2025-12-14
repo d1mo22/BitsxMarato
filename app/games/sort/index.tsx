@@ -50,7 +50,8 @@ export default function SortGameInstructionScreen() {
                 >
                     <MaterialIcons name="arrow-back" size={24} color={theme.text} />
                 </TouchableOpacity>
-                <View style={{ width: 48 }} />
+                <Text style={[styles.headerTitle, { color: theme.textSecondary }]}>VELOCIDAD</Text>
+                <View style={{ width: 40 }} />
             </View>
 
             {/* Main Content */}
@@ -122,7 +123,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         padding: 24,
     },
-    // ... (resto de tus estilos anteriores)
+    headerTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+    },
     content: {
         flex: 1,
         alignItems: 'center',

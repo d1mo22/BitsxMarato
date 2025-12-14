@@ -44,7 +44,7 @@ export default function VerbalFluencyIntro() {
         >
           <MaterialIcons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
-        <Text style={[globalStyles.title, { color: theme.text, opacity: 0.8 }]}>Fluencia Verbal</Text>
+        <Text style={[styles.headerTitle, { color: theme.textSecondary }]}>FLUENCIA VERBAL</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -56,10 +56,10 @@ export default function VerbalFluencyIntro() {
         {/* Hero Illustration */}
         <View style={styles.heroContainer}>
           <View style={[
-            styles.heroCircle, 
-            { 
-              backgroundColor: isLocked ? (isDark ? '#334155' : '#e2e8f0') : (isDark ? '#1a332a' : '#e0f7fa'), 
-              borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)' 
+            styles.heroCircle,
+            {
+              backgroundColor: isLocked ? (isDark ? '#334155' : '#e2e8f0') : (isDark ? '#1a332a' : '#e0f7fa'),
+              borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)'
             }
           ]}>
             {isLocked ? (
@@ -94,9 +94,9 @@ export default function VerbalFluencyIntro() {
           </View>
 
           {isLocked ? (
-             <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
-               Ya has realizado tu entrenamiento de fluencia verbal por hoy. ¡Vuelve mañana para seguir practicando!
-             </Text>
+            <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
+              Ya has realizado tu entrenamiento de fluencia verbal por hoy. ¡Vuelve mañana para seguir practicando!
+            </Text>
           ) : (
             <>
               <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
@@ -151,6 +151,12 @@ const styles = StyleSheet.create({
   heroContainer: {
     alignItems: 'center',
     marginVertical: 24,
+  },
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   heroCircle: {
     width: 256,

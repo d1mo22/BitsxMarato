@@ -50,8 +50,10 @@ export default function VerbalFluencyGame() {
   const lastPartial = useRef<string | null>(null);
   const turnRef = useRef<Turn>('letter');
   const usedRef = useRef<string[]>([]);
+  const lastWordRef = useRef<string | null>(null); // ✅ Nueva ref para evitar duplicados inmediatos
   const startTime = useRef<number | null>(null);
   const timerRef = useRef<NodeJS.Timer | null>(null);
+  const listeningRef = useRef(false); // ✅ Ref para estado síncrono del mic
 
   useEffect(() => {
     turnRef.current = turn;
@@ -59,6 +61,9 @@ export default function VerbalFluencyGame() {
   useEffect(() => {
     usedRef.current = usedWords;
   }, [usedWords]);
+  useEffect(() => {
+    lastWordRef.current = lastWord;
+  }, [lastWord]);
 
   const pulseScale = useSharedValue(1);
 
@@ -85,58 +90,58 @@ export default function VerbalFluencyGame() {
 
     return {
       animals: mk('Animal', [
-        'perro','gato','caballo','vaca','oveja','cerdo','conejo','leon','tigre','elefante',
-        'jirafa','mono','lobo','zorro','oso','pato','gallina','pollo','aguila','halcon',
-        'paloma','cuervo','pez','tiburon','delfin','ballena','foca','morsa','pulpo','calamar',
-        'tortuga','serpiente','cobra','lagarto','iguana','camaleon','rana','sapo',
-        'cocodrilo','caiman','hipopotamo','rinoceronte','cebra','camello','burro',
-        'raton','rata','hamster','erizo','ardilla','murcielago',
+        'perro', 'gato', 'caballo', 'vaca', 'oveja', 'cerdo', 'conejo', 'leon', 'tigre', 'elefante',
+        'jirafa', 'mono', 'lobo', 'zorro', 'oso', 'pato', 'gallina', 'pollo', 'aguila', 'halcon',
+        'paloma', 'cuervo', 'pez', 'tiburon', 'delfin', 'ballena', 'foca', 'morsa', 'pulpo', 'calamar',
+        'tortuga', 'serpiente', 'cobra', 'lagarto', 'iguana', 'camaleon', 'rana', 'sapo',
+        'cocodrilo', 'caiman', 'hipopotamo', 'rinoceronte', 'cebra', 'camello', 'burro',
+        'raton', 'rata', 'hamster', 'erizo', 'ardilla', 'murcielago',
       ]),
       fruits: mk('Fruta', [
-        'manzana','pera','platano','banana','naranja','mandarina','limon','pomelo','uva','kiwi',
-        'mango','papaya','pina','piña','coco','fresa','frutilla','cereza','ciruela','melocoton',
-        'durazno','albaricoque','nectarina','granada','higo','caqui','lichi','maracuya',
-        'guanabana','chirimoya','tamarindo','arandano','mora','frambuesa','grosella',
-        'sandia','melon','aguacate','palta','aceituna','datil','higo chumbo',
-        'carambola','pitaya','yuzu','kumquat','membrillo','noni','jaboticaba',
+        'manzana', 'pera', 'platano', 'banana', 'naranja', 'mandarina', 'limon', 'pomelo', 'uva', 'kiwi',
+        'mango', 'papaya', 'pina', 'piña', 'coco', 'fresa', 'frutilla', 'cereza', 'ciruela', 'melocoton',
+        'durazno', 'albaricoque', 'nectarina', 'granada', 'higo', 'caqui', 'lichi', 'maracuya',
+        'guanabana', 'chirimoya', 'tamarindo', 'arandano', 'mora', 'frambuesa', 'grosella',
+        'sandia', 'melon', 'aguacate', 'palta', 'aceituna', 'datil', 'higo chumbo',
+        'carambola', 'pitaya', 'yuzu', 'kumquat', 'membrillo', 'noni', 'jaboticaba',
       ]),
       colors: mk('Color', [
-        'rojo','azul','verde','amarillo','negro','blanco','gris','morado','violeta',
-        'rosa','naranja','marron','beige','turquesa','cian','magenta',
+        'rojo', 'azul', 'verde', 'amarillo', 'negro', 'blanco', 'gris', 'morado', 'violeta',
+        'rosa', 'naranja', 'marron', 'beige', 'turquesa', 'cian', 'magenta',
       ]),
       cities: mk('Ciudad', [
-        'barcelona','madrid','valencia','sevilla','zaragoza','malaga','granada','cordoba',
-        'bilbao','san sebastian','vitoria','pamplona','logroño','santander','oviedo','gijon',
-        'leon','burgos','valladolid','salamanca','segovia','avila','toledo','cuenca',
-        'albacete','murcia','alicante','elche','castellon','tarragona','reus',
-        'girona','lleida','manresa','vic','figueres','ibiza','palma','mahon',
-        'paris','londres','roma','milano','venecia','florencia','berlin','munich',
-        'viena','praga','budapest','varsovia','lisboa','porto','bruselas','amsterdam',
+        'barcelona', 'madrid', 'valencia', 'sevilla', 'zaragoza', 'malaga', 'granada', 'cordoba',
+        'bilbao', 'san sebastian', 'vitoria', 'pamplona', 'logroño', 'santander', 'oviedo', 'gijon',
+        'leon', 'burgos', 'valladolid', 'salamanca', 'segovia', 'avila', 'toledo', 'cuenca',
+        'albacete', 'murcia', 'alicante', 'elche', 'castellon', 'tarragona', 'reus',
+        'girona', 'lleida', 'manresa', 'vic', 'figueres', 'ibiza', 'palma', 'mahon',
+        'paris', 'londres', 'roma', 'milano', 'venecia', 'florencia', 'berlin', 'munich',
+        'viena', 'praga', 'budapest', 'varsovia', 'lisboa', 'porto', 'bruselas', 'amsterdam',
       ]),
       jobs: mk('Profesión', [
-        'medico','doctora','enfermera','auxiliar','psicologo','psiquiatra','fisioterapeuta',
-        'dentista','higienista','farmaceutico','veterinario',
-        'profesor','maestro','docente','educador','pedagogo',
-        'ingeniero','arquitecto','aparejador','programador','desarrollador',
-        'analista','tecnico','electricista','fontanero','mecanico',
-        'cocinero','chef','panadero','pastelero','camarero','sumiller',
-        'abogado','juez','fiscal','notario','procurador',
-        'policia','guardia','bombero','militar','soldado',
-        'periodista','redactor','reportero','fotografo',
-        'actor','actriz','director','productor','guionista',
-        'disenador','ilustrador','animador','editor',
-        'economista','contable','auditor','administrativo',
+        'medico', 'doctora', 'enfermera', 'auxiliar', 'psicologo', 'psiquiatra', 'fisioterapeuta',
+        'dentista', 'higienista', 'farmaceutico', 'veterinario',
+        'profesor', 'maestro', 'docente', 'educador', 'pedagogo',
+        'ingeniero', 'arquitecto', 'aparejador', 'programador', 'desarrollador',
+        'analista', 'tecnico', 'electricista', 'fontanero', 'mecanico',
+        'cocinero', 'chef', 'panadero', 'pastelero', 'camarero', 'sumiller',
+        'abogado', 'juez', 'fiscal', 'notario', 'procurador',
+        'policia', 'guardia', 'bombero', 'militar', 'soldado',
+        'periodista', 'redactor', 'reportero', 'fotografo',
+        'actor', 'actriz', 'director', 'productor', 'guionista',
+        'disenador', 'ilustrador', 'animador', 'editor',
+        'economista', 'contable', 'auditor', 'administrativo',
       ]),
       food: mk('Alimento', [
-        'pan','arroz','pasta','macarrones','espaguetis','pizza','hamburguesa','bocadillo',
-        'sopa','caldo','pure','ensalada','lentejas','garbanzos','judias','alubias',
-        'pollo','ternera','cerdo','cordero','pavo','jamon','chorizo','salchicha',
-        'pescado','atun','salmon','merluza','bacalao','sardina','boqueron',
-        'huevo','tortilla','queso','yogur','leche','mantequilla','nata',
-        'aceite','vinagre','sal','azucar','miel',
-        'patata','patatas','tomate','cebolla','ajo','zanahoria','calabacin',
-        'berenjena','pimiento','brocoli','coliflor','espinaca','lechuga',
-        'chocolate','galleta','bizcocho','pastel','tarta','helado','flan',
+        'pan', 'arroz', 'pasta', 'macarrones', 'espaguetis', 'pizza', 'hamburguesa', 'bocadillo',
+        'sopa', 'caldo', 'pure', 'ensalada', 'lentejas', 'garbanzos', 'judias', 'alubias',
+        'pollo', 'ternera', 'cerdo', 'cordero', 'pavo', 'jamon', 'chorizo', 'salchicha',
+        'pescado', 'atun', 'salmon', 'merluza', 'bacalao', 'sardina', 'boqueron',
+        'huevo', 'tortilla', 'queso', 'yogur', 'leche', 'mantequilla', 'nata',
+        'aceite', 'vinagre', 'sal', 'azucar', 'miel',
+        'patata', 'patatas', 'tomate', 'cebolla', 'ajo', 'zanahoria', 'calabacin',
+        'berenjena', 'pimiento', 'brocoli', 'coliflor', 'espinaca', 'lechuga',
+        'chocolate', 'galleta', 'bizcocho', 'pastel', 'tarta', 'helado', 'flan',
       ]),
     };
   }, []);
@@ -161,13 +166,16 @@ export default function VerbalFluencyGame() {
     setError(null);
 
     keepListening.current = false;
-    try { Voice.stop(); } catch {}
+    try { Voice.stop(); } catch { }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const validate = (text: string) => {
     const word = normalize(text).split(/\s+/).pop();
     if (!word) return;
+
+    // ✅ Evitar procesar la misma palabra dos veces seguidas (rebote del micrófono)
+    if (word === lastWordRef.current) return;
 
     if (usedRef.current.includes(word)) {
       setError('Palabra repetida');
@@ -189,10 +197,16 @@ export default function VerbalFluencyGame() {
 
     setError(null);
     setLastWord(word);
+    lastWordRef.current = word; // ✅ Actualización inmediata
 
     setUsedWords((p) => [...p, word]);
+    usedRef.current.push(word); // ✅ Actualización inmediata
+
     setScore((p) => p + 1);
-    setTurn((p) => (p === 'letter' ? 'category' : 'letter'));
+
+    const nextTurn = turnRef.current === 'letter' ? 'category' : 'letter';
+    setTurn(nextTurn);
+    turnRef.current = nextTurn; // ✅ Actualización inmediata
   };
 
   const finishGame = async () => {
@@ -203,7 +217,6 @@ export default function VerbalFluencyGame() {
       console.error('Error saving game date', e)
     );
 
-    // ✅ PASAR CORRECT WORDS AL RESULT
     router.replace({
       pathname: '/games/verbal-fluency/result',
       params: {
@@ -238,6 +251,7 @@ export default function VerbalFluencyGame() {
   useEffect(() => {
     Voice.onSpeechStart = () => {
       setListening(true);
+      listeningRef.current = true;
       setPartial(null);
     };
 
@@ -246,6 +260,7 @@ export default function VerbalFluencyGame() {
       if (t) {
         setPartial(t);
         lastPartial.current = t;
+        validate(t); // ✅ Validar en tiempo real para reducir latencia
       }
     };
 
@@ -256,28 +271,37 @@ export default function VerbalFluencyGame() {
       validate(t);
       lastPartial.current = null;
 
-      try { await Voice.stop(); } catch {}
-      setListening(false);
-
-      setTimeout(() => {
-        if (keepListening.current) {
-          Voice.start('es-ES').catch(() => {});
-        }
-      }, 80);
+      // Al recibir resultados finales, paramos el motor.
+      // El reinicio se delega EXCLUSIVAMENTE a onSpeechEnd para evitar condiciones de carrera.
+      try { await Voice.stop(); } catch { }
     };
 
     Voice.onSpeechEnd = () => {
       setListening(false);
+      listeningRef.current = false;
       if (lastPartial.current) {
         validate(lastPartial.current);
         lastPartial.current = null;
       }
+
+      // ✅ Único punto de reinicio para evitar llamadas dobles a Voice.start()
+      setTimeout(() => {
+        if (keepListening.current && !listeningRef.current) {
+          Voice.start('es-ES').catch(() => { });
+        }
+      }, 250);
     };
 
-    Voice.onSpeechError = () => {
+    Voice.onSpeechError = (e) => {
       setListening(false);
+      listeningRef.current = false;
       if (keepListening.current) {
-        setTimeout(() => Voice.start('es-ES').catch(() => {}), 200);
+        // ✅ Más tiempo de recuperación ante errores
+        setTimeout(() => {
+          if (!listeningRef.current) {
+            Voice.start('es-ES').catch(() => { });
+          }
+        }, 500);
       }
     };
 
@@ -305,9 +329,10 @@ export default function VerbalFluencyGame() {
   const stopAll = async () => {
     keepListening.current = false;
     setListening(false);
+    listeningRef.current = false;
     setPartial(null);
     stopTimer();
-    try { await Voice.stop(); } catch {}
+    try { await Voice.stop(); } catch { }
   };
 
   const toggleMic = () => {
@@ -328,7 +353,6 @@ export default function VerbalFluencyGame() {
           <MaterialIcons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
 
-        <Text style={[globalStyles.title, { color: theme.text }]}>Fluencia Verbal</Text>
         <Text style={{ color: theme.textSecondary }}>{score} pts</Text>
       </View>
 
@@ -372,7 +396,7 @@ export default function VerbalFluencyGame() {
         </View>
 
         {!!partial && <Text style={{ color: theme.textSecondary }}>Detectando: {partial}</Text>}
-        {!!lastWord && <Text style={{ color: theme.primary, fontSize: 20, fontWeight: '900' }}>✔ {lastWord}</Text>}
+        {!!lastWord && <Text style={{ color: theme.primary, fontSize: 20, fontWeight: '900' }}>{lastWord.charAt(0).toUpperCase() + lastWord.slice(1)}</Text>}
         {!!error && <Text style={{ color: theme.error, fontWeight: '800' }}>{error}</Text>}
 
         <Text style={{ color: theme.textSecondary }}>Tiempo: {timeLeft}s</Text>
