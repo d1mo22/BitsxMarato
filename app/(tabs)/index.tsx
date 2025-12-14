@@ -12,15 +12,15 @@ import { useFormStore, Domain } from "@/app/stores/formStore";
 function domainLabel(d: Domain) {
   switch (d) {
     case "atencio":
-      return "Atenció";
+      return "Atención";
     case "velocitat":
-      return "Velocitat de processament";
+      return "Velocidad de procesamiento";
     case "fluencia":
-      return "Fluència verbal";
+      return "Fluidez verbal";
     case "memoria":
-      return "Memòria";
+      return "Memoria";
     case "executives":
-      return "Funcions executives";
+      return "Funciones ejecutivas";
   }
 }
 
@@ -28,29 +28,29 @@ function recommendationsFor(domain: Domain) {
   switch (domain) {
     case "atencio":
       return [
-        "Avui és un bon dia per fer algo d'esport, potser anar a caminar una estona o alguna altra activitat que et vingui de gust",
-        "Aquesta setmana és ideal per fer alguna manualitat, posa molta atenció en allò que fas, potser un dibuix, un puzle, cosir alguna cosa, etc.",
-        "Si tens una estona, llegeix un text curt (una notícia, un paràgraf d’un llibre) i intenta comprendre’l detenidament. Pots subratllar mentalment les idees importants per mantenir-te concentrat.",
+        "Hoy es un buen día para hacer algo de deporte, quizás ir a caminar un rato o alguna otra actividad que te apetezca",
+        "Esta semana es ideal para hacer alguna manualidad, pon mucha atención en lo que haces, quizás un dibujo, un puzle, coser algo, etc.",
+        "Si tienes un rato, lee un texto corto (una noticia, un párrafo de un libro) e intenta comprenderlo detenidamente. Puedes subrayar mentalmente las ideas importantes para mantenerte concentrado.",
       ];
     case "velocitat":
-      return ["Redueix multitarea: 1 cosa cada cop.", "Comença per una tasca fàcil per agafar ritme."];
+      return ["Reduce la multitarea: 1 cosa a la vez.", "Empieza por una tarea fácil para coger ritmo."];
     case "fluencia":
       return [
-        "Avui és un bon dia per fer algo d'esport, potser anar a caminar una estona o alguna altra activitat que et vingui de gust",
-        "Avui durant 5 minuts has d'anar dient els objectes que veus al teu voltant",
-        "Pensa durant uns minuts quantes fruites i verdures hi ha de color vermell",
+        "Hoy es un buen día para hacer algo de deporte, quizás ir a caminar un rato o alguna otra actividad que te apetezca",
+        "Hoy durante 5 minutos tienes que ir diciendo los objetos que ves a tu alrededor",
+        "Piensa durante unos minutos cuántas frutas y verduras hay de color rojo",
       ];
     case "memoria":
       return [
-        "Avui és un bon dia per fer algo d'esport, potser anar a caminar una estona o alguna altra activitat que et vingui de gust",
-        "Aquesta setmana és ideal per fer tornar a fer aquella recepta que has deixat de fer i et sortia tan bé...",
-        "Prova d'aprendre algunes paraules d'un nou idioma, potser un idioma que ja en sàpigues una mica o un completament nou!",
+        "Hoy es un buen día para hacer algo de deporte, quizás ir a caminar un rato o alguna otra actividad que te apetezca",
+        "Esta semana es ideal para volver a hacer aquella receta que has dejado de hacer y te salía tan bien...",
+        "¡Prueba a aprender algunas palabras de un nuevo idioma, quizás un idioma que ya sepas un poco o uno completamente nuevo!",
       ];
     case "executives":
       return [
         "Trata de ponerte como objetivo hacer 3 cosas hoy",
-        "Has de pensar com planificar-te, què decidiràs fer primer",
-        "Comença per el que puguis fer més ràpid o el que et desbloquegi la resta.",
+        "Tienes que pensar cómo planificarte, qué decidirás hacer primero",
+        "Empieza por lo que puedas hacer más rápido o lo que te desbloquee el resto.",
       ];
   }
 }
@@ -147,7 +147,7 @@ export default function HomeScreen() {
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>Formulario</Text>
             <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: "700", marginTop: 2 }}>
-              Què t’ha passat ara?
+              ¿Qué te ha pasado ahora?
             </Text>
           </View>
 
@@ -184,7 +184,7 @@ export default function HomeScreen() {
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>Juegos</Text>
             <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: "700", marginTop: 2 }}>
-              Recorda fer els tests
+              Recuerda hacer los tests
             </Text>
           </View>
 
@@ -196,6 +196,7 @@ export default function HomeScreen() {
           style={{
             borderRadius: 18,
             padding: 16,
+            marginHorizontal: 16,
             backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
             borderWidth: 1,
             borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)",
@@ -219,16 +220,16 @@ export default function HomeScreen() {
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.text, fontWeight: "900", fontSize: 16 }}>Recomendaciones</Text>
               <Text style={{ color: theme.textSecondary, fontWeight: "700", marginTop: 2 }}>
-                Basades en el que has marcat avui ({today})
+                Basadas en lo que has marcado hoy ({today})
               </Text>
             </View>
           </View>
 
           {!ready ? (
-            <Text style={stylesRec.textSmall(theme)}>Carregant…</Text>
+            <Text style={stylesRec.textSmall(theme)}>Cargando…</Text>
           ) : affected.length === 0 ? (
             <Text style={stylesRec.textSmall(theme)}>
-              Encara no has marcat cap episodi avui. Ves al formulari i toca el que t’hagi passat.
+              Todavía no has marcado ningún episodio hoy. Ve al formulario y toca lo que te haya pasado.
             </Text>
           ) : (
             <View>
