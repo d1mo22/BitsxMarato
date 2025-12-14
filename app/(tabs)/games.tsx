@@ -2,15 +2,26 @@ import { Colors } from '@/constants/colors';
 import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback } from 'react';
 import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameCard from '../../components/game-card';
+import { useGameStore } from '@/app/stores/gameStore';
 
 export default function GamesScreen() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
+  const { getDailyProgress, refresh } = useGameStore();
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
+
+  const progress = getDailyProgress();
+  const progressPercent = Math.min(100, Math.round((progress.completedCount / progress.totalTarget) * 100));
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
@@ -20,23 +31,6 @@ export default function GamesScreen() {
       <View style={[globalStyles.header, { paddingHorizontal: 16 }]}>
         <Text style={[globalStyles.title, { color: theme.text }]}>Juegos</Text>
       </View>
-      {/* <View style={[globalStyles.header, { backgroundColor: isDark ? 'rgba(17, 33, 23, 0.9)' : 'rgba(246, 248, 247, 0.9)' }]}>
-        <View style={globalStyles.headerLeft}>
-          <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
-            <MaterialIcons name="menu" size={24} color={theme.icon} />
-          </TouchableOpacity>
-        </View>
-        <View style={globalStyles.headerRight}>
-          <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
-            <MaterialIcons name="notifications" size={24} color={theme.icon} />
-            <View style={globalStyles.badge} />
-          </TouchableOpacity>
-          <Image
-            source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAU5aans5kKgEKtbI2iEB3q5A59JcIfkXcQhojsIGbA_rAyGHac-260pA0mebPIcj0qEMLgbmTpAN_Cd04iMVBCrimt9BBX1qfeCMdp0hdmwWwe3y8FhcyItMrm_VGJaDs7Jfg7gXTKWARZ7ydeL3pxXJIZCxlhnAVZ_btJg-e0qbPfZ3_lOdm6giOJb_3KCvH4DaVFVXLftVAmzh9Om8i9WsSq-2QuGItM1LoXnPpZ_nNH6EGReUMsEBDULwjtsMcwRp71zpl7rvk" }}
-            style={globalStyles.avatar}
-          />
-        </View>
-      </View> */}
 
       <ScrollView
         style={globalStyles.scrollView}
@@ -49,8 +43,10 @@ export default function GamesScreen() {
           <View style={[globalStyles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <View style={styles.progressHeader}>
               <View>
-                <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>META DIARIA</Text>
-                <Text style={[styles.progressValue, { color: isDark ? Colors.white : Colors.gray800 }]}>1/3 Juegos</Text>
+                <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>META</Text>
+                <Text style={[styles.progressValue, { color: isDark ? Colors.white : Colors.gray800 }]}>
+                  {progress.completedCount}/{progress.totalTarget} Juegos
+                </Text>
               </View>
               <View style={styles.streakContainer}>
                 <MaterialIcons name="local-fire-department" size={18} color={Colors.primary} />
@@ -59,7 +55,7 @@ export default function GamesScreen() {
             </View>
             {/* Progress Bar */}
             <View style={[styles.progressBarContainer, { backgroundColor: isDark ? 'rgba(0,0,0,0.4)' : Colors.gray100 }]}>
-              <View style={[styles.progressBarFill, { width: '33%' }]} />
+              <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
             </View>
           </View>
         </View>
@@ -84,6 +80,7 @@ export default function GamesScreen() {
               imageBgColor="#e0f7fa"
               imageDarkBgColor="#1a332a"
               onPress={() => router.push('/games/verbal-fluency')}
+              completed={progress.completedGames.includes('verbal-fluency')}
             />
 
             {/* Card 6: Atención */}
@@ -99,6 +96,7 @@ export default function GamesScreen() {
               imageBgColor="#eef4ff"
               imageDarkBgColor="#1e2433"
               onPress={() => router.push('/games/atention')}
+              completed={progress.completedGames.includes('atention')}
             />
 
             {/* Card 7: Velocidad de Procesamiento */}
@@ -114,6 +112,7 @@ export default function GamesScreen() {
               imageBgColor="#eef4ff"
               imageDarkBgColor="#1e2433"
               onPress={() => router.push('/games/sort')}
+              completed={progress.completedGames.includes('sort')}
             />
 
             {/* Card 8: Memoria de Trabajo (Reves) */}
@@ -129,6 +128,7 @@ export default function GamesScreen() {
               imageBgColor="#f2f0ff"
               imageDarkBgColor="#121022"
               onPress={() => router.push('/games/reves')}
+              completed={progress.completedGames.includes('reves')}
             />
           </View>
         </View>

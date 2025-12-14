@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGameStore } from '@/app/stores/gameStore';
 
 /* -------------------------------------------------------------------------- */
 /*                                   STORAGE                                  */
@@ -25,6 +26,7 @@ export default function VerbalFluencyResult() {
   const correctWords = Number(params.correctWords ?? 0);
 
   const { colors: theme } = useTheme();
+  const { markGameCompleted } = useGameStore();
 
   useEffect(() => {
     saveCorrectWords();
@@ -46,6 +48,9 @@ export default function VerbalFluencyResult() {
       });
 
       await AsyncStorage.setItem(WORDS_HISTORY_KEY, JSON.stringify(history));
+
+      // Marcar juego como completado
+      await markGameCompleted('verbal-fluency');
     } catch (e) {
       console.error('Error saving verbal fluency result', e);
     }

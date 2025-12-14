@@ -13,6 +13,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle } from 'react-native-svg';
 import { Colors } from '@/constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGameStore } from '@/app/stores/gameStore';
 
 /* -------------------------------------------------------------------------- */
 /*                                   STORAGE                                  */
@@ -32,6 +33,7 @@ export default function SortGameResultScreen() {
 
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { markGameCompleted } = useGameStore();
 
   useEffect(() => {
     saveTimeResult();
@@ -53,6 +55,9 @@ export default function SortGameResultScreen() {
       });
 
       await AsyncStorage.setItem(SORT_TIME_HISTORY_KEY, JSON.stringify(history));
+
+      // Marcar juego como completado
+      await markGameCompleted('sort');
     } catch (e) {
       console.error('Error saving sort time result', e);
     }

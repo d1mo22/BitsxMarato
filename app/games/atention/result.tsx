@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGameStore } from '@/app/stores/gameStore';
 
 /* -------------------------------------------------------------------------- */
 /*                                   STORAGE                                  */
@@ -24,6 +25,7 @@ export default function AttentionResult() {
   const params = useLocalSearchParams();
   const score = Number(params.score ?? 0);
   const { colors: theme } = useTheme();
+  const { markGameCompleted } = useGameStore();
 
   /* --------------------------- SAVE SCORE ON LOAD -------------------------- */
   useEffect(() => {
@@ -49,6 +51,9 @@ export default function AttentionResult() {
         SCORE_HISTORY_KEY,
         JSON.stringify(history)
       );
+
+      // Marcar juego como completado
+      await markGameCompleted('atention');
     } catch (e) {
       console.error('Error saving score', e);
     }

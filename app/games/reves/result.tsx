@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGameStore } from '@/app/stores/gameStore';
 
 /* -------------------------------------------------------------------------- */
 /*                                   STORAGE                                  */
@@ -28,6 +29,7 @@ export default function SortGameResultScreen() {
   const won = params.won === 'true';
 
   const { colors: theme } = useTheme();
+  const { markGameCompleted } = useGameStore();
 
   /* -------------------------- SAVE RESULT ON LOAD -------------------------- */
   useEffect(() => {
@@ -60,6 +62,9 @@ export default function SortGameResultScreen() {
         SORT_LEVEL_HISTORY_KEY,
         JSON.stringify(history)
       );
+
+      // Marcar juego como completado
+      await markGameCompleted('reves');
     } catch (e) {
       console.error('Error saving sort game result', e);
     }

@@ -20,17 +20,31 @@ interface GameCardProps {
   imageBgColor: string;
   imageDarkBgColor: string;
   onPress?: () => void;
+  completed?: boolean;
 }
 
-export default function GameCard({ theme, isDark, title, duration, description, category, categoryIcon, imageUri, imageBgColor, imageDarkBgColor, onPress }: GameCardProps) {
+export default function GameCard({ theme, isDark, title, duration, description, category, categoryIcon, imageUri, imageBgColor, imageDarkBgColor, onPress, completed }: GameCardProps) {
   return (
-    <View style={[styles.gameCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+    <View style={[
+      styles.gameCard,
+      {
+        backgroundColor: theme.surface,
+        borderColor: theme.border,
+        opacity: completed ? 0.7 : 1
+      }
+    ]}>
       <View style={styles.gameCardContent}>
         {/* Image Area */}
-        <View style={[styles.gameImageContainer, { backgroundColor: isDark ? imageDarkBgColor : imageBgColor }]}>
-          <Image source={{ uri: imageUri }} style={styles.gameImage} />
+        <View style={[
+          styles.gameImageContainer,
+          {
+            backgroundColor: isDark ? imageDarkBgColor : imageBgColor,
+            opacity: completed ? 0.5 : 1
+          }
+        ]}>
+          <Image source={{ uri: imageUri }} style={[styles.gameImage, { opacity: completed ? 0.4 : 0.8 }]} />
         </View>
-        
+
         {/* Content Area */}
         <View style={styles.gameInfo}>
           <View style={styles.gameHeader}>
@@ -39,25 +53,40 @@ export default function GameCard({ theme, isDark, title, duration, description, 
               <Text style={[styles.durationText, { color: isDark ? Colors.gray300 : Colors.gray600 }]}>{duration}</Text>
             </View>
           </View>
-          
+
           <Text style={[styles.gameDescription, { color: theme.textSecondary }]} numberOfLines={2}>
             {description}
           </Text>
-          
+
           <View style={styles.gameFooter}>
             <View style={styles.categoryContainer}>
-              <MaterialIcons name={categoryIcon as any} size={16} color={Colors.primary} />
-              <Text style={styles.categoryText}>{category}</Text>
+              <MaterialIcons name={categoryIcon as any} size={16} color={completed ? theme.textSecondary : Colors.primary} />
+              <Text style={[styles.categoryText, { color: completed ? theme.textSecondary : Colors.primary }]}>{category}</Text>
             </View>
-            
-            <TouchableOpacity style={[
-              styles.playButton,
-              {
-                backgroundColor: isDark ? 'rgba(54, 226, 123, 0.1)' : 'rgba(54, 226, 123, 0.2)',
-              }
-            ]} onPress={onPress}>
-              <MaterialIcons name="play-arrow" size={20} color={Colors.primary} />
-              <Text style={[styles.playButtonText, { color: Colors.primary }]}>Jugar</Text>
+
+            <TouchableOpacity
+              style={[
+                styles.playButton,
+                {
+                  backgroundColor: completed
+                    ? (isDark ? 'rgba(255,255,255,0.1)' : Colors.gray200)
+                    : (isDark ? 'rgba(54, 226, 123, 0.1)' : 'rgba(54, 226, 123, 0.2)'),
+                }
+              ]}
+              onPress={completed ? undefined : onPress}
+              disabled={completed}
+            >
+              <MaterialIcons
+                name={completed ? "check" : "play-arrow"}
+                size={20}
+                color={completed ? theme.textSecondary : Colors.primary}
+              />
+              <Text style={[
+                styles.playButtonText,
+                { color: completed ? theme.textSecondary : Colors.primary }
+              ]}>
+                {completed ? "Hecho" : "Jugar"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
