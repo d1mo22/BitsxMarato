@@ -29,7 +29,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           .map((route: any, index: number) => {
             const { options } = descriptors[route.key];
 
-            // Skip hidden routes
             if (options.href === null) return null;
 
             const label =

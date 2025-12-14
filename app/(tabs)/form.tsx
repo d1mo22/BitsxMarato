@@ -108,7 +108,7 @@ function ItemRow({
             <Text style={[styles.badgeText, { color: theme.textSecondary }]}>{domain}</Text>
           </View>
 
-          {/* ✅ Indicador principal */}
+
           <View
             style={[
               styles.countPill,
@@ -179,7 +179,7 @@ export default function FormTabScreen() {
 
     for (const it of ITEMS) {
       const c = getTodayCount(it.key);
-      if (c > 0) counts[it.domain] += c; // suma episodios de hoy
+      if (c > 0) counts[it.domain] += c;
     }
 
     const affected = (Object.keys(counts) as Domain[])
@@ -242,7 +242,7 @@ export default function FormTabScreen() {
                 <ItemRow
                   key={it.key}
                   count={count}
-                  onPress={() => incrementItem(it.key)} // ✅ sumar siempre
+                  onPress={() => incrementItem(it.key)}
                   text={it.text}
                   domain={domainLabel(it.domain)}
                   theme={theme}

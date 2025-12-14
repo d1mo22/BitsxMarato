@@ -18,7 +18,6 @@ import { useTheme } from "@/hooks/use-theme";
 import { globalStyles } from "@/styles/global";
 import { useFormStore, Domain } from "@/app/stores/formStore";
 
-/* ───────────────── TYPES ───────────────── */
 
 type CategoryKey =
   | "general"
@@ -26,7 +25,7 @@ type CategoryKey =
   | "fluencia_alternant"
   | "atencio"
   | "velocitat"
-  | "executives"; // ✅ opcional pero útil (tu formStore sí tiene executives)
+  | "executives";
 
 type Video = {
   id: string;
@@ -44,7 +43,6 @@ type Category = {
   tips: string[];
 };
 
-/* ───────────────── HELPERS ───────────────── */
 
 async function openExternalUrl(url: string) {
   try {
@@ -91,21 +89,18 @@ function categoryLabelForBadge(key: CategoryKey) {
   }
 }
 
-/* ───────────────── COMPONENT ───────────────── */
 
 export default function WellnessScreen() {
   const { colors: theme, isDark } = useTheme();
 
   const { ready, today, refresh, getAffectedDomainsForDay } = useFormStore();
 
-  // ✅ Refresca cuando vuelves a esta pantalla
   useFocusEffect(
     useCallback(() => {
       refresh?.();
     }, [refresh])
   );
 
-  // 📌 Datos “hoy” desde formStore
   const { affectedDomains, domainCounts } = useMemo(() => {
     if (!ready || !getAffectedDomainsForDay) {
       return { affectedDomains: [] as Domain[], domainCounts: {} as Record<Domain, number> };
@@ -114,7 +109,6 @@ export default function WellnessScreen() {
     return { affectedDomains: r.affected as Domain[], domainCounts: r.counts as Record<Domain, number> };
   }, [ready, getAffectedDomainsForDay, today]);
 
-  // ✅ Categories base (tu contenido)
   const CATEGORIES: Category[] = useMemo(
     () => [
       {
@@ -220,7 +214,6 @@ export default function WellnessScreen() {
     []
   );
 
-  // ✅ Convertimos “áreas afectadas hoy” a categorías + orden por episodios (desc)
   const affectedCategoryCounts: Partial<Record<CategoryKey, number>> = useMemo(() => {
     const acc: Partial<Record<CategoryKey, number>> = {};
     for (const d of affectedDomains) {
@@ -235,23 +228,19 @@ export default function WellnessScreen() {
     return keys.sort((a, b) => (affectedCategoryCounts[b] ?? 0) - (affectedCategoryCounts[a] ?? 0));
   }, [affectedCategoryCounts]);
 
-  // ✅ Orden final: General siempre, luego afectadas, luego el resto
   const orderedCategories: Category[] = useMemo(() => {
     const byKey = new Map(CATEGORIES.map((c) => [c.key, c] as const));
 
     const result: Category[] = [];
-    // 1) general
     const general = byKey.get("general");
     if (general) result.push(general);
 
-    // 2) afectadas (sin repetir)
     for (const k of affectedCategoryKeysSorted) {
       if (k === "general") continue;
       const c = byKey.get(k);
       if (c && !result.some((x) => x.key === c.key)) result.push(c);
     }
 
-    // 3) resto
     for (const c of CATEGORIES) {
       if (!result.some((x) => x.key === c.key)) result.push(c);
     }
@@ -259,7 +248,6 @@ export default function WellnessScreen() {
     return result;
   }, [CATEGORIES, affectedCategoryKeysSorted]);
 
-  // ✅ Expansión: general abierto + afectadas abiertas
   const [expanded, setExpanded] = useState<Record<CategoryKey, boolean>>({
     general: true,
     memoria_treball: false,
@@ -269,7 +257,6 @@ export default function WellnessScreen() {
     executives: false,
   });
 
-  // Cuando cambian afectadas, auto-abrimos esas categorías (sin cerrar lo que el usuario ya abrió)
   React.useEffect(() => {
     if (!ready) return;
     setExpanded((prev) => {
@@ -291,7 +278,6 @@ export default function WellnessScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        {/* ✅ Mini resumen arriba */}
         <View
           style={[
             styles.infoBox,
@@ -338,7 +324,6 @@ export default function WellnessScreen() {
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <Text style={[styles.catTitle, { color: theme.text }]}>{cat.title}</Text>
 
-                      {/* ✅ Badge "Recomendado hoy" */}
                       {isRecommended && (
                         <View
                           style={[
@@ -418,7 +403,6 @@ export default function WellnessScreen() {
   );
 }
 
-/* ───────────────── STYLES ───────────────── */
 
 const styles = StyleSheet.create({
   infoBox: {

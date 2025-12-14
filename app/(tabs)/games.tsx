@@ -67,7 +67,7 @@ export default function GamesScreen() {
           </View>
 
           <View style={globalStyles.cardsContainer}>
-            {/* Card 5: Fluencia Verbal */}
+            {/* Fluencia Verbal */}
             <GameCard
               theme={theme}
               isDark={isDark}
@@ -83,7 +83,7 @@ export default function GamesScreen() {
               completed={progress.completedGames.includes('verbal-fluency')}
             />
 
-            {/* Card 6: Atención */}
+            {/* Atención */}
             <GameCard
               theme={theme}
               isDark={isDark}
@@ -99,7 +99,7 @@ export default function GamesScreen() {
               completed={progress.completedGames.includes('atention')}
             />
 
-            {/* Card 7: Velocidad de Procesamiento */}
+            {/* Velocidad de Procesamiento */}
             <GameCard
               theme={theme}
               isDark={isDark}
@@ -115,7 +115,7 @@ export default function GamesScreen() {
               completed={progress.completedGames.includes('sort')}
             />
 
-            {/* Card 8: Memoria de Trabajo (Reves) */}
+            {/*Memoria de Trabajo (Reves) */}
             <GameCard
               theme={theme}
               isDark={isDark}

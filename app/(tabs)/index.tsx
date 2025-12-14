@@ -61,7 +61,6 @@ export default function HomeScreen() {
 
   const { ready, today, refresh, getAffectedDomainsForDay } = useFormStore();
 
-  // ✅ Opción A: al volver a Home, recargar AsyncStorage
   useFocusEffect(
     useCallback(() => {
       refresh();
@@ -105,7 +104,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* ✅ Un solo ScrollView (móvil friendly) */}
       <ScrollView
         style={globalStyles.scrollView}
         contentContainerStyle={globalStyles.scrollContent}
