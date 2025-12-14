@@ -23,8 +23,9 @@ export function useTheme() {
             gray600: Colors.gray600,
             gray800: Colors.gray800,
             gray900: Colors.gray900,
+            gray250: Colors.gray250,
             icon: isDark ? Colors.gray400 : Colors.gray500,
-            border: isDark ? Colors.gray800 : Colors.gray200,
+            border: isDark ? Colors.gray250 : Colors.gray200,
             active: Colors.primary,
         }
     };

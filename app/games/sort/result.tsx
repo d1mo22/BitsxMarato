@@ -41,7 +41,7 @@ export default function SortGameResultScreen() {
                         Prueba de Velocidad{'\n'}Terminada
                     </Text>
                     <Text style={[styles.subtitle, { color: isDark ? '#94a3b8' : '#64748b' }]}>
-                        ¡Bien hecho! Has mantenido un excelente enfoque hoy.
+                        ¡Bien hecho! Has mantenido un excelente enfoque.
                     </Text>
                 </View>
 
@@ -51,56 +51,6 @@ export default function SortGameResultScreen() {
                     <View style={styles.timeContainer}>
                         <Text style={[styles.timeValue, { color: isDark ? '#fff' : '#1e293b' }]}>{time}</Text>
                         <Text style={[styles.timeUnit, { color: isDark ? '#94a3b8' : '#64748b' }]}>s</Text>
-                    </View>
-                    <View style={[styles.badge, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9' }]}>
-                        <MaterialIcons name="trending-up" size={16} color={Colors.primary} />
-                        <Text style={[styles.badgeText, { color: isDark ? '#cbd5e1' : '#64748b' }]}>+2s vs promedio</Text>
-                    </View>
-                </View>
-
-                {/* Chart Section */}
-                <View style={styles.chartSection}>
-                    <View style={styles.chartHeader}>
-                        <Text style={[styles.chartTitle, { color: isDark ? '#fff' : '#1e293b' }]}>Progreso semanal</Text>
-                        <View style={[styles.averageBadge, { backgroundColor: 'rgba(54, 226, 123, 0.1)' }]}>
-                            <Text style={[styles.averageText, { color: isDark ? Colors.primary : '#4db676' }]}>Promedio: 38s</Text>
-                        </View>
-                    </View>
-
-                    <View style={[styles.chartContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9' }]}>
-                        <View style={{ height: 140, width: '100%' }}>
-                            <Svg height="100%" width="100%" viewBox="0 0 350 120" preserveAspectRatio="none">
-                                <Defs>
-                                    <LinearGradient id="gradientFill" x1="0" y1="0" x2="0" y2="1">
-                                        <Stop offset="0" stopColor={Colors.primary} stopOpacity="0.3" />
-                                        <Stop offset="1" stopColor={Colors.primary} stopOpacity="0" />
-                                    </LinearGradient>
-                                </Defs>
-                                <Path
-                                    d="M0,80 C50,80 50,40 100,50 C150,60 150,90 200,70 C250,50 250,30 300,40 C325,45 350,20 350,20 L350,120 L0,120 Z"
-                                    fill="url(#gradientFill)"
-                                />
-                                <Path
-                                    d="M0,80 C50,80 50,40 100,50 C150,60 150,90 200,70 C250,50 250,30 300,40 C325,45 350,20 350,20"
-                                    fill="none"
-                                    stroke={Colors.primary}
-                                    strokeWidth="4"
-                                    strokeLinecap="round"
-                                />
-                                <Circle cx="350" cy="20" r="6" fill={isDark ? '#fff' : '#1e293b'} />
-                                <Circle cx="350" cy="20" r="12" fill="none" stroke={Colors.primary} strokeWidth="2" opacity="0.5" />
-                            </Svg>
-                        </View>
-
-                        {/* Days Labels */}
-                        <View style={styles.daysContainer}>
-                            {['L', 'M', 'X', 'J', 'V', 'S'].map((day, index) => (
-                                <Text key={index} style={styles.dayText}>{day}</Text>
-                            ))}
-                            <View style={styles.activeDay}>
-                                <Text style={[styles.activeDayText, { color: isDark ? '#fff' : '#1e293b' }]}>D</Text>
-                            </View>
-                        </View>
                     </View>
                 </View>
             </View>

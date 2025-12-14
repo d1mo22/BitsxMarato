@@ -107,16 +107,12 @@ export default function HomeScreen() {
 
       {/* ✅ Un solo ScrollView (móvil friendly) */}
       <ScrollView
-        style={{ flex: 1 }}
+        style={globalStyles.scrollView}
+        contentContainerStyle={globalStyles.scrollContent}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 16,
-          paddingBottom: 28,
-        }}
       >
         {/* Greeting */}
-        <View style={[globalStyles.titleContainer, { marginTop: 6, marginBottom: 14 }]}>
+        <View style={[globalStyles.titleContainer, { marginTop: 16 }]}>
           <Text style={[globalStyles.title, { color: theme.text }]}>Hola, Ana.</Text>
           <Text style={[globalStyles.subtitle, { color: theme.textSecondary }]}>¿Cómo te sientes hoy?</Text>
         </View>

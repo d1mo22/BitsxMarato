@@ -14,7 +14,7 @@ export default function AttentionIntro() {
   const router = useRouter();
   const { colors: theme, isDark } = useTheme();
   const [isLocked, setIsLocked] = useState(false); // Estado de bloqueo
-
+  setIsLocked(false)
   // Verificar disponibilidad al entrar
   useFocusEffect(
     useCallback(() => {
@@ -26,7 +26,7 @@ export default function AttentionIntro() {
     try {
       const lastPlayedDate = await AsyncStorage.getItem(GAME_ID);
       const today = new Date().toISOString().split('T')[0];
-      setIsLocked(lastPlayedDate === today);
+      //setIsLocked(lastPlayedDate === today);
     } catch (error) {
       console.error('Error checking availability:', error);
     }
@@ -58,18 +58,18 @@ export default function AttentionIntro() {
         {/* Illustration Placeholder */}
         <View style={[styles.illustrationContainer, { backgroundColor: theme.surface }]}>
           {isLocked ? (
-             <MaterialIcons name="check-circle" size={80} color={isDark ? '#94a3b8' : '#64748b'} style={{ opacity: 0.8 }} />
+            <MaterialIcons name="check-circle" size={80} color={isDark ? '#94a3b8' : '#64748b'} style={{ opacity: 0.8 }} />
           ) : (
-             <>
-               <MaterialIcons name="memory" size={80} color={theme.primary} style={{ opacity: 0.8 }} />
-               <View style={[styles.blob, { backgroundColor: theme.primary, opacity: 0.1 }]} />
-             </>
+            <>
+              <MaterialIcons name="memory" size={80} color={theme.primary} style={{ opacity: 0.8 }} />
+              <View style={[styles.blob, { backgroundColor: theme.primary, opacity: 0.1 }]} />
+            </>
           )}
         </View>
 
         <View style={styles.descriptionContainer}>
           <Text style={[styles.description, { color: theme.text }]}>
-            {isLocked 
+            {isLocked
               ? "Ya has realizado tu entrenamiento de atención por hoy. ¡Vuelve mañana!"
               : <Text>Observa los números aparecer, luego escríbelos en el <Text style={{ color: theme.primary, fontWeight: 'bold' }}>MISMO</Text> orden exacto.</Text>
             }
@@ -79,22 +79,22 @@ export default function AttentionIntro() {
         <View style={styles.footer}>
           <TouchableOpacity
             style={[
-                styles.button, 
-                { 
-                    backgroundColor: isLocked ? (isDark ? '#334155' : '#cbd5e1') : theme.primary,
-                    shadowColor: isLocked ? 'transparent' : theme.primary 
-                }
+              styles.button,
+              {
+                backgroundColor: isLocked ? (isDark ? '#334155' : '#cbd5e1') : theme.primary,
+                shadowColor: isLocked ? 'transparent' : theme.primary
+              }
             ]}
             onPress={() => router.push('/games/atention/game')}
-            disabled={isLocked}
+          // </View>disabled={isLocked}
           >
             <Text style={[styles.buttonText, isLocked && { color: '#fff' }]}>
-                {isLocked ? 'Completado por hoy' : 'Listo'}
+              {isLocked ? 'Completado por hoy' : 'Listo'}
             </Text>
-            <MaterialIcons 
-                name={isLocked ? "lock" : "arrow-forward"} 
-                size={24} 
-                color={isLocked ? "#fff" : Colors.gray900} 
+            <MaterialIcons
+              name={isLocked ? "lock" : "arrow-forward"}
+              size={24}
+              color={isLocked ? "#fff" : Colors.gray900}
             />
           </TouchableOpacity>
         </View>

@@ -11,6 +11,7 @@ export const Colors = {
   gray400: "#9ca3af",
   gray300: "#d1d5db",
   gray200: "#e5e7eb",
+  gray250: "rgba(255,255,255,0.14)",
   gray100: "#f3f4f6",
   white: "#ffffff",
 };

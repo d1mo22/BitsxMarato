@@ -62,7 +62,6 @@ function Pill({
   );
 }
 
-/** ✅ Fila sin toggle: tocar = suma +1 */
 function ItemRow({
   count,
   onPress,
@@ -90,7 +89,7 @@ function ItemRow({
         },
       ]}
     >
-      {/* 🔵 Indicador visual */}
+      {/* Indicador visual */}
       <View
         style={[
           styles.dot,

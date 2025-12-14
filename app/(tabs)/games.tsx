@@ -17,7 +17,10 @@ export default function GamesScreen() {
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* Header */}
-      <View style={[globalStyles.header, { backgroundColor: isDark ? 'rgba(17, 33, 23, 0.9)' : 'rgba(246, 248, 247, 0.9)' }]}>
+      <View style={[globalStyles.header, { paddingHorizontal: 16 }]}>
+        <Text style={[globalStyles.title, { color: theme.text }]}>Juegos</Text>
+      </View>
+      {/* <View style={[globalStyles.header, { backgroundColor: isDark ? 'rgba(17, 33, 23, 0.9)' : 'rgba(246, 248, 247, 0.9)' }]}>
         <View style={globalStyles.headerLeft}>
           <TouchableOpacity style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}>
             <MaterialIcons name="menu" size={24} color={theme.icon} />
@@ -33,22 +36,13 @@ export default function GamesScreen() {
             style={globalStyles.avatar}
           />
         </View>
-      </View>
+      </View> */}
 
       <ScrollView
         style={globalStyles.scrollView}
         contentContainerStyle={globalStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Greeting & Context */}
-        <View style={[globalStyles.titleContainer, { marginTop: 16 }]}>
-          <Text style={[globalStyles.title, { color: theme.text }]}>
-            Hola, Ana. {'\n'}
-            <Text style={[globalStyles.subtitle, { color: theme.textSecondary }]}>
-              Tómate un momento para ti.
-            </Text>
-          </Text>
-        </View>
 
         {/* Daily Progress */}
         <View style={globalStyles.section}>
