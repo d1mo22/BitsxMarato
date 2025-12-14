@@ -122,7 +122,7 @@ export default function AttentionGame() {
     await new Promise(resolve => setTimeout(resolve, 300));
 
     if (isCorrect) {
-      setScore(prev => prev + level * 10);
+      setScore(prev => prev + 1);
     }
 
     // Game Logic
@@ -138,7 +138,7 @@ export default function AttentionGame() {
         if (level >= 9) {
           // GANADO (Max nivel) -> Guardar y salir
           await markGameAsPlayed();
-          router.replace({ pathname: '/games/atention/result', params: { score: score + level * 10 } });
+          router.replace({ pathname: '/games/atention/result', params: { score: score + 1 } });
         } else {
           // SIGUIENTE NIVEL
           const nextLevel = level + 1;

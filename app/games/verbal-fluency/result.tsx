@@ -2,18 +2,57 @@ import { Colors } from '@/constants/colors';
 import { useTheme } from '@/hooks/use-theme';
 import { globalStyles } from '@/styles/global';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+/* -------------------------------------------------------------------------- */
+/*                                   STORAGE                                  */
+/* -------------------------------------------------------------------------- */
+
+const LAST_WORDS_KEY = 'VERBAL_FLUENCY_LAST_CORRECT_WORDS';
+const WORDS_HISTORY_KEY = 'VERBAL_FLUENCY_CORRECT_WORDS_HISTORY';
+
+const getTodayKey = () => new Date().toISOString().split('T')[0];
+
+/* -------------------------------------------------------------------------- */
 
 export default function VerbalFluencyResult() {
   const router = useRouter();
-  const { colors: theme, isDark } = useTheme();
+  const params = useLocalSearchParams();
+  const correctWords = Number(params.correctWords ?? 0);
+
+  const { colors: theme } = useTheme();
+
+  useEffect(() => {
+    saveCorrectWords();
+  }, []);
+
+  const saveCorrectWords = async () => {
+    try {
+      // Guardar último resultado
+      await AsyncStorage.setItem(LAST_WORDS_KEY, correctWords.toString());
+
+      // Guardar histórico por día
+      const today = getTodayKey();
+      const raw = await AsyncStorage.getItem(WORDS_HISTORY_KEY);
+      const history = raw ? JSON.parse(raw) : [];
+
+      history.push({
+        date: today,
+        correctWords,
+      });
+
+      await AsyncStorage.setItem(WORDS_HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      console.error('Error saving verbal fluency result', e);
+    }
+  };
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.background }]}>
-      {/* Header */}
       <View style={globalStyles.header}>
         <TouchableOpacity
           style={[globalStyles.iconButton, { backgroundColor: 'transparent' }]}
@@ -24,7 +63,6 @@ export default function VerbalFluencyResult() {
       </View>
 
       <View style={styles.content}>
-        {/* Success Icon */}
         <View style={styles.iconContainer}>
           <View style={[styles.glowRing, { backgroundColor: 'rgba(54, 226, 123, 0.1)' }]} />
           <View style={[styles.iconCircle, { backgroundColor: theme.surface, shadowColor: Colors.primary }]}>
@@ -36,17 +74,24 @@ export default function VerbalFluencyResult() {
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
           Calentamiento cerebral completo.
         </Text>
+
         <Text style={[styles.context, { color: theme.textSecondary }]}>
           Fluencia Verbal Alterna
         </Text>
+
+        {/* ✅ MOSTRAR PALABRAS CORRECTAS */}
+        <View style={[styles.scoreCard, { backgroundColor: theme.surface }]}>
+          <Text style={[styles.scoreLabel, { color: theme.textSecondary }]}>
+            Palabras correctas
+          </Text>
+          <Text style={[styles.scoreValue, { color: theme.primary }]}>
+            {correctWords}
+          </Text>
+        </View>
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.continueButton}
-          onPress={() => router.dismissTo('/games')}
-        >
+        <TouchableOpacity style={styles.continueButton} onPress={() => router.dismissTo('/games')}>
           <Text style={styles.continueButtonText}>Continuar</Text>
         </TouchableOpacity>
       </View>
@@ -65,7 +110,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   glowRing: {
     position: 'absolute',
@@ -100,6 +145,24 @@ const styles = StyleSheet.create({
   context: {
     fontSize: 14,
     opacity: 0.6,
+    marginBottom: 24,
+  },
+  scoreCard: {
+    width: '100%',
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  scoreLabel: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+    fontWeight: '700',
+  },
+  scoreValue: {
+    fontSize: 48,
+    fontWeight: '900',
   },
   footer: {
     padding: 24,

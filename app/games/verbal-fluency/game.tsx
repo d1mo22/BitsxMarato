@@ -5,19 +5,23 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import Voice from '@react-native-voice/voice';
 import { useColorScheme } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Turn = 'letter' | 'category';
 
 const TOTAL_TIME = 60;
-const GAME_ID = 'VERBAL_FLUENCY_LAST_PLAYED'; // Mismo ID que en index
+const GAME_ID = 'VERBAL_FLUENCY_LAST_PLAYED';
 
-// Letras “amables” para español (evita K/W/X/Y si quieres)
 const LETTER_POOL = 'ABCDEFGHILMNOPQRSTUVZ'.split('');
 
 export default function VerbalFluencyGame() {
@@ -32,13 +36,11 @@ export default function VerbalFluencyGame() {
   const [usedWords, setUsedWords] = useState<string[]>([]);
   const [score, setScore] = useState(0);
 
-  // Random params per entry
   const [letter, setLetter] = useState('P');
-  const [categoryId, setCategoryId] = useState<'animals' | 'fruits' | 'colors' | 'cities' | 'jobs' | 'objects'>(
-    'animals'
-  );
+  const [categoryId, setCategoryId] = useState<
+    'animals' | 'fruits' | 'colors' | 'cities' | 'jobs' | 'objects' | 'food'
+  >('animals');
 
-  // Voice UI
   const [listening, setListening] = useState(false);
   const [partial, setPartial] = useState<string | null>(null);
   const [lastWord, setLastWord] = useState<string | null>(null);
@@ -51,19 +53,18 @@ export default function VerbalFluencyGame() {
   const startTime = useRef<number | null>(null);
   const timerRef = useRef<NodeJS.Timer | null>(null);
 
-  useEffect(() => { turnRef.current = turn; }, [turn]);
-  useEffect(() => { usedRef.current = usedWords; }, [usedWords]);
+  useEffect(() => {
+    turnRef.current = turn;
+  }, [turn]);
+  useEffect(() => {
+    usedRef.current = usedWords;
+  }, [usedWords]);
 
-  // Pulse animation
   const pulseScale = useSharedValue(1);
 
   useEffect(() => {
     if (listening) {
-      pulseScale.value = withRepeat(
-        withTiming(1.2, { duration: 1000 }),
-        -1,
-        true
-      );
+      pulseScale.value = withRepeat(withTiming(1.2, { duration: 1000 }), -1, true);
     } else {
       pulseScale.value = withTiming(1, { duration: 300 });
     }
@@ -73,7 +74,6 @@ export default function VerbalFluencyGame() {
     transform: [{ scale: pulseScale.value }],
   }));
 
-  // Utils
   const normalize = (s: string) =>
     s.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
@@ -84,74 +84,62 @@ export default function VerbalFluencyGame() {
     });
 
     return {
-      // 🐶 ANIMALES (50+)
       animals: mk('Animal', [
-        'perro', 'gato', 'caballo', 'vaca', 'oveja', 'cerdo', 'conejo', 'leon', 'tigre', 'elefante',
-        'jirafa', 'mono', 'lobo', 'zorro', 'oso', 'pato', 'gallina', 'pollo', 'aguila', 'halcon',
-        'paloma', 'cuervo', 'pez', 'tiburon', 'delfin', 'ballena', 'foca', 'morsa', 'pulpo', 'calamar',
-        'tortuga', 'serpiente', 'cobra', 'lagarto', 'iguana', 'camaleon', 'rana', 'sapo',
-        'cocodrilo', 'caiman', 'hipopotamo', 'rinoceronte', 'cebra', 'camello', 'burro',
-        'raton', 'rata', 'hamster', 'erizo', 'ardilla', 'murcielago',
+        'perro','gato','caballo','vaca','oveja','cerdo','conejo','leon','tigre','elefante',
+        'jirafa','mono','lobo','zorro','oso','pato','gallina','pollo','aguila','halcon',
+        'paloma','cuervo','pez','tiburon','delfin','ballena','foca','morsa','pulpo','calamar',
+        'tortuga','serpiente','cobra','lagarto','iguana','camaleon','rana','sapo',
+        'cocodrilo','caiman','hipopotamo','rinoceronte','cebra','camello','burro',
+        'raton','rata','hamster','erizo','ardilla','murcielago',
       ]),
-
-      // 🍎 FRUTAS (50+)
       fruits: mk('Fruta', [
-        'manzana', 'pera', 'platano', 'banana', 'naranja', 'mandarina', 'limon', 'pomelo', 'uva', 'kiwi',
-        'mango', 'papaya', 'pina', 'piña', 'coco', 'fresa', 'frutilla', 'cereza', 'ciruela', 'melocoton',
-        'durazno', 'albaricoque', 'nectarina', 'granada', 'higo', 'caqui', 'lichi', 'maracuya',
-        'guanabana', 'chirimoya', 'tamarindo', 'arandano', 'mora', 'frambuesa', 'grosella',
-        'sandia', 'melon', 'aguacate', 'palta', 'aceituna', 'datil', 'higo chumbo',
-        'carambola', 'pitaya', 'yuzu', 'kumquat', 'membrillo', 'noni', 'jaboticaba',
+        'manzana','pera','platano','banana','naranja','mandarina','limon','pomelo','uva','kiwi',
+        'mango','papaya','pina','piña','coco','fresa','frutilla','cereza','ciruela','melocoton',
+        'durazno','albaricoque','nectarina','granada','higo','caqui','lichi','maracuya',
+        'guanabana','chirimoya','tamarindo','arandano','mora','frambuesa','grosella',
+        'sandia','melon','aguacate','palta','aceituna','datil','higo chumbo',
+        'carambola','pitaya','yuzu','kumquat','membrillo','noni','jaboticaba',
       ]),
-
-      // 🎨 COLORES (lista corta)
       colors: mk('Color', [
-        'rojo', 'azul', 'verde', 'amarillo', 'negro', 'blanco', 'gris', 'morado', 'violeta',
-        'rosa', 'naranja', 'marron', 'beige', 'turquesa', 'cian', 'magenta',
+        'rojo','azul','verde','amarillo','negro','blanco','gris','morado','violeta',
+        'rosa','naranja','marron','beige','turquesa','cian','magenta',
       ]),
-
-      // 🌍 CIUDADES (50+)
       cities: mk('Ciudad', [
-        'barcelona', 'madrid', 'valencia', 'sevilla', 'zaragoza', 'malaga', 'granada', 'cordoba',
-        'bilbao', 'san sebastian', 'vitoria', 'pamplona', 'logroño', 'santander', 'oviedo', 'gijon',
-        'leon', 'burgos', 'valladolid', 'salamanca', 'segovia', 'avila', 'toledo', 'cuenca',
-        'albacete', 'murcia', 'alicante', 'elche', 'castellon', 'tarragona', 'reus',
-        'girona', 'lleida', 'manresa', 'vic', 'figueres', 'ibiza', 'palma', 'mahon',
-        'paris', 'londres', 'roma', 'milano', 'venecia', 'florencia', 'berlin', 'munich',
-        'viena', 'praga', 'budapest', 'varsovia', 'lisboa', 'porto', 'bruselas', 'amsterdam',
+        'barcelona','madrid','valencia','sevilla','zaragoza','malaga','granada','cordoba',
+        'bilbao','san sebastian','vitoria','pamplona','logroño','santander','oviedo','gijon',
+        'leon','burgos','valladolid','salamanca','segovia','avila','toledo','cuenca',
+        'albacete','murcia','alicante','elche','castellon','tarragona','reus',
+        'girona','lleida','manresa','vic','figueres','ibiza','palma','mahon',
+        'paris','londres','roma','milano','venecia','florencia','berlin','munich',
+        'viena','praga','budapest','varsovia','lisboa','porto','bruselas','amsterdam',
       ]),
-
-      // 👩‍⚕️ PROFESIONES (50+)
       jobs: mk('Profesión', [
-        'medico', 'doctora', 'enfermera', 'auxiliar', 'psicologo', 'psiquiatra', 'fisioterapeuta',
-        'dentista', 'higienista', 'farmaceutico', 'veterinario',
-        'profesor', 'maestro', 'docente', 'educador', 'pedagogo',
-        'ingeniero', 'arquitecto', 'aparejador', 'programador', 'desarrollador',
-        'analista', 'tecnico', 'electricista', 'fontanero', 'mecanico',
-        'cocinero', 'chef', 'panadero', 'pastelero', 'camarero', 'sumiller',
-        'abogado', 'juez', 'fiscal', 'notario', 'procurador',
-        'policia', 'guardia', 'bombero', 'militar', 'soldado',
-        'periodista', 'redactor', 'reportero', 'fotografo',
-        'actor', 'actriz', 'director', 'productor', 'guionista',
-        'disenador', 'ilustrador', 'animador', 'editor',
-        'economista', 'contable', 'auditor', 'administrativo',
+        'medico','doctora','enfermera','auxiliar','psicologo','psiquiatra','fisioterapeuta',
+        'dentista','higienista','farmaceutico','veterinario',
+        'profesor','maestro','docente','educador','pedagogo',
+        'ingeniero','arquitecto','aparejador','programador','desarrollador',
+        'analista','tecnico','electricista','fontanero','mecanico',
+        'cocinero','chef','panadero','pastelero','camarero','sumiller',
+        'abogado','juez','fiscal','notario','procurador',
+        'policia','guardia','bombero','militar','soldado',
+        'periodista','redactor','reportero','fotografo',
+        'actor','actriz','director','productor','guionista',
+        'disenador','ilustrador','animador','editor',
+        'economista','contable','auditor','administrativo',
       ]),
-
-      // 🍽️ ALIMENTOS (categoría nueva, 50+)
       food: mk('Alimento', [
-        'pan', 'arroz', 'pasta', 'macarrones', 'espaguetis', 'pizza', 'hamburguesa', 'bocadillo',
-        'sopa', 'caldo', 'pure', 'ensalada', 'lentejas', 'garbanzos', 'judias', 'alubias',
-        'pollo', 'ternera', 'cerdo', 'cordero', 'pavo', 'jamon', 'chorizo', 'salchicha',
-        'pescado', 'atun', 'salmon', 'merluza', 'bacalao', 'sardina', 'boqueron',
-        'huevo', 'tortilla', 'queso', 'yogur', 'leche', 'mantequilla', 'nata',
-        'aceite', 'vinagre', 'sal', 'azucar', 'miel',
-        'patata', 'patatas', 'tomate', 'cebolla', 'ajo', 'zanahoria', 'calabacin',
-        'berenjena', 'pimiento', 'brocoli', 'coliflor', 'espinaca', 'lechuga',
-        'chocolate', 'galleta', 'bizcocho', 'pastel', 'tarta', 'helado', 'flan',
+        'pan','arroz','pasta','macarrones','espaguetis','pizza','hamburguesa','bocadillo',
+        'sopa','caldo','pure','ensalada','lentejas','garbanzos','judias','alubias',
+        'pollo','ternera','cerdo','cordero','pavo','jamon','chorizo','salchicha',
+        'pescado','atun','salmon','merluza','bacalao','sardina','boqueron',
+        'huevo','tortilla','queso','yogur','leche','mantequilla','nata',
+        'aceite','vinagre','sal','azucar','miel',
+        'patata','patatas','tomate','cebolla','ajo','zanahoria','calabacin',
+        'berenjena','pimiento','brocoli','coliflor','espinaca','lechuga',
+        'chocolate','galleta','bizcocho','pastel','tarta','helado','flan',
       ]),
     };
   }, []);
-
 
   const categoryLabel = CATEGORIES[categoryId]?.label ?? 'Categoría';
 
@@ -163,7 +151,6 @@ export default function VerbalFluencyGame() {
     setLetter(randomLetter);
     setCategoryId(randomCategory);
 
-    // Reset state for a fresh session
     setStarted(false);
     setTimeLeft(TOTAL_TIME);
     setTurn('letter');
@@ -173,16 +160,13 @@ export default function VerbalFluencyGame() {
     setLastWord(null);
     setError(null);
 
-    // ensure mic off
     keepListening.current = false;
-    try { Voice.stop(); } catch { }
+    try { Voice.stop(); } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, []);
 
-  // Validation
   const validate = (text: string) => {
     const word = normalize(text).split(/\s+/).pop();
-
     if (!word) return;
 
     if (usedRef.current.includes(word)) {
@@ -211,7 +195,23 @@ export default function VerbalFluencyGame() {
     setTurn((p) => (p === 'letter' ? 'category' : 'letter'));
   };
 
-  // Timer
+  const finishGame = async () => {
+    stopAll();
+
+    const today = new Date().toISOString().split('T')[0];
+    await AsyncStorage.setItem(GAME_ID, today).catch((e) =>
+      console.error('Error saving game date', e)
+    );
+
+    // ✅ PASAR CORRECT WORDS AL RESULT
+    router.replace({
+      pathname: '/games/verbal-fluency/result',
+      params: {
+        correctWords: String(score),
+      },
+    });
+  };
+
   const startTimer = () => {
     if (timerRef.current) return;
     startTime.current = Date.now();
@@ -224,12 +224,7 @@ export default function VerbalFluencyGame() {
       setTimeLeft(left);
 
       if (left === 0) {
-        stopAll();
-        // GUARDAR FECHA AL TERMINAR
-        const today = new Date().toISOString().split('T')[0];
-        AsyncStorage.setItem(GAME_ID, today).catch(e => console.error("Error saving game", e));
-        
-        router.replace('/games/verbal-fluency/result');
+        finishGame();
       }
     }, 250);
   };
@@ -240,7 +235,6 @@ export default function VerbalFluencyGame() {
     startTime.current = null;
   };
 
-  // Voice handlers
   useEffect(() => {
     Voice.onSpeechStart = () => {
       setListening(true);
@@ -262,12 +256,12 @@ export default function VerbalFluencyGame() {
       validate(t);
       lastPartial.current = null;
 
-      try { await Voice.stop(); } catch { }
+      try { await Voice.stop(); } catch {}
       setListening(false);
 
       setTimeout(() => {
         if (keepListening.current) {
-          Voice.start('es-ES').catch(() => { });
+          Voice.start('es-ES').catch(() => {});
         }
       }, 80);
     };
@@ -283,7 +277,7 @@ export default function VerbalFluencyGame() {
     Voice.onSpeechError = () => {
       setListening(false);
       if (keepListening.current) {
-        setTimeout(() => Voice.start('es-ES').catch(() => { }), 200);
+        setTimeout(() => Voice.start('es-ES').catch(() => {}), 200);
       }
     };
 
@@ -313,7 +307,7 @@ export default function VerbalFluencyGame() {
     setListening(false);
     setPartial(null);
     stopTimer();
-    try { await Voice.stop(); } catch { }
+    try { await Voice.stop(); } catch {}
   };
 
   const toggleMic = () => {
@@ -339,20 +333,17 @@ export default function VerbalFluencyGame() {
       </View>
 
       <View style={styles.content}>
-        {/* Prompt */}
         <Text style={{ color: theme.text, fontSize: 18, fontWeight: '800', textAlign: 'center', paddingHorizontal: 20 }}>
           {turn === 'letter'
             ? `Di una palabra que empiece por ${letter}`
             : `Di una palabra de la categoría: ${categoryLabel}`}
         </Text>
 
-        {/* Info random */}
         <Text style={{ color: theme.textSecondary, marginTop: 4 }}>
           Letra: <Text style={{ color: theme.primary, fontWeight: '900' }}>{letter}</Text> ·
           Categoría: <Text style={{ color: theme.primary, fontWeight: '900' }}> {categoryLabel}</Text>
         </Text>
 
-        {/* Mic + ring */}
         <View style={styles.timerContainer}>
           <Animated.View style={[styles.pulseBackground, animatedPulseStyle, { backgroundColor: 'rgba(54, 226, 123, 0.2)' }]} />
 
@@ -372,7 +363,11 @@ export default function VerbalFluencyGame() {
           </Svg>
 
           <TouchableOpacity style={styles.micButton} onPress={toggleMic} activeOpacity={0.85}>
-            <MaterialIcons name={keepListening.current ? (listening ? 'graphic-eq' : 'stop') : 'mic'} size={64} color="white" />
+            <MaterialIcons
+              name={keepListening.current ? (listening ? 'graphic-eq' : 'stop') : 'mic'}
+              size={64}
+              color="white"
+            />
           </TouchableOpacity>
         </View>
 
