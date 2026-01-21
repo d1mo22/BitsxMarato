@@ -1,50 +1,115 @@
-# Welcome to your Expo app 👋
+# BitsxMarato - App de Bienestar Cognitivo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicacion movil desarrollada para el hackathon **BitsxMarato** que ayuda a los usuarios a monitorear y ejercitar su salud cognitiva mediante juegos interactivos y seguimiento personalizado.
 
-## Get started
+## Caracteristicas
 
-1. Install dependencies
+### Juegos Cognitivos
 
+La aplicacion incluye 4 juegos disenados para ejercitar diferentes dominios cognitivos:
+
+| Juego | Dominio | Descripcion |
+|-------|---------|-------------|
+| **Fluencia Verbal** | Lenguaje | Reto de agilidad mental alternando palabras |
+| **Atencion** | Memoria | Memoriza y repite secuencias numericas |
+| **Velocidad** | Procesamiento | Encuentra numeros en orden ascendente |
+| **Memoria Inversa** | Memoria de trabajo | Repite secuencias de numeros al reves |
+
+### Formulario de Seguimiento
+
+Permite a los usuarios registrar episodios y sintomas diarios relacionados con:
+- Atencion
+- Velocidad de procesamiento
+- Fluidez verbal
+- Memoria
+- Funciones ejecutivas
+
+### Recomendaciones Personalizadas
+
+Basadas en los episodios registrados, la app genera recomendaciones diarias para mejorar las areas cognitivas afectadas.
+
+## Tecnologias
+
+- **React Native** con **Expo** (SDK 54)
+- **TypeScript**
+- **Expo Router** (file-based routing)
+- **React Native Voice** para reconocimiento de voz
+- Soporte para **iOS**, **Android** y **Web**
+- Modo claro/oscuro automatico
+
+## Inicio Rapido
+
+### Requisitos
+
+- Node.js (v18 o superior)
+- npm o yarn
+- Expo CLI (`npm install -g expo-cli`)
+- Para desarrollo nativo: Xcode (iOS) o Android Studio (Android)
+
+### Instalacion
+
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/d1mo22/BitsxMarato.git
+   cd BitsxMarato
+   ```
+
+2. Instala las dependencias:
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. Inicia la aplicacion:
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+### Opciones de Ejecucion
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Expo Go**: Escanea el codigo QR con la app Expo Go
+- **Android**: `npm run android`
+- **iOS**: `npm run ios`
+- **Web**: `npm run web`
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Estructura del Proyecto
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+BitsxMarato/
+├── app/
+│   ├── (tabs)/           # Pantallas principales (tabs)
+│   │   ├── index.tsx     # Home - Inicio
+│   │   ├── games.tsx     # Lista de juegos
+│   │   ├── form.tsx      # Formulario de seguimiento
+│   │   └── wellness.tsx  # Bienestar
+│   ├── games/            # Juegos cognitivos
+│   │   ├── atention/     # Juego de atencion
+│   │   ├── reves/        # Memoria inversa
+│   │   ├── sort/         # Velocidad de procesamiento
+│   │   └── verbal-fluency/ # Fluencia verbal
+│   └── stores/           # Estado global (Zustand-like)
+├── components/           # Componentes reutilizables
+├── constants/            # Colores y temas
+├── hooks/                # Custom hooks
+└── styles/               # Estilos globales
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Scripts Disponibles
 
-## Learn more
+| Comando | Descripcion |
+|---------|-------------|
+| `npm start` | Inicia el servidor de desarrollo |
+| `npm run android` | Ejecuta en Android |
+| `npm run ios` | Ejecuta en iOS |
+| `npm run web` | Ejecuta en navegador web |
+| `npm run lint` | Ejecuta el linter |
 
-To learn more about developing your project with Expo, look at the following resources:
+## Permisos Requeridos
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+La aplicacion requiere los siguientes permisos para funcionar correctamente:
 
-## Join the community
+- **Microfono**: Para los juegos con reconocimiento de voz
+- **Internet**: Para cargar recursos y sincronizacion
 
-Join our community of developers creating universal apps.
+## Licencia
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Proyecto desarrollado para BitsxMarato 2025.
